@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.util.UUID;
 
 @SpringBootApplication
@@ -54,6 +55,22 @@ class InitApplication {
 			if (clientService.createClient(admin)) {
 				log.info("Master Admin\nemail: admin@email.com\npassword: " + password);
 			}
+		}
+
+		// create a dynamic resource folder for the app
+		File file = new File(System.getenv("APPDATA") + "/SpringBoot/eCommerceApp");
+		if (!file.mkdirs()) {
+			log.warn("Failed to create the dynamic resource folder");
+		}
+		// create the image folder in the dynamic resource folder
+		file = new File(System.getenv("APPDATA") + "/SpringBoot/eCommerceApp/image");
+		if (!file.mkdir()) {
+			log.warn("Failed to create the image folder in the dynamic resource folder");
+		}
+		// create the thumbnail folder in the dynamic resource folder
+		file = new File(System.getenv("APPDATA") + "/SpringBoot/eCommerceApp/thumbnail");
+		if (!file.mkdir()) {
+			log.warn("Failed to create the thumbnail folder in the dynamic resource folder");
 		}
 	}
 

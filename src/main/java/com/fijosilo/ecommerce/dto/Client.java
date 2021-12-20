@@ -5,8 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 
 @Entity
-@Table(name="client",
-        uniqueConstraints=@UniqueConstraint(columnNames={"email"}))
+@Table(name="client", uniqueConstraints=@UniqueConstraint(columnNames={"email"}))
 public class Client {
     @Id
     @GenericGenerator(name = "increment", strategy = "increment")
