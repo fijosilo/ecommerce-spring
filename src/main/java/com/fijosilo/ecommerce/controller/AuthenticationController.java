@@ -1,9 +1,8 @@
 package com.fijosilo.ecommerce.controller;
 
-import com.fijosilo.ecommerce.dto.User;
-import com.fijosilo.ecommerce.service.UserService;
+import com.fijosilo.ecommerce.dto.Client;
+import com.fijosilo.ecommerce.service.ClientService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,11 +12,11 @@ import java.util.HashMap;
 @RestController
 public class AuthenticationController {
     private final PasswordEncoder passwordEncoder;
-    private final UserService userService;
+    private final ClientService clientService;
 
-    public AuthenticationController(PasswordEncoder passwordEncoder, UserService userService) {
+    public AuthenticationController(PasswordEncoder passwordEncoder, ClientService clientService) {
         this.passwordEncoder = passwordEncoder;
-        this.userService = userService;
+        this.clientService = clientService;
     }
 
     @PostMapping("/register")
@@ -98,17 +97,17 @@ public class AuthenticationController {
         // all validations test passed
 
         // create the user
-        User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
+        Client client = new Client();
+        client.setFirstName(firstName);
+        client.setLastName(lastName);
+        client.setEmail(email);
         // encrypt the user password
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole("CLIENT");
-        user.setEnabled(true);
+        client.setPassword(passwordEncoder.encode(password));
+        client.setRole("CLIENT");
+        client.setEnabled(true);
 
         // save the user to the database
-        if (!userService.createUser(user)) {
+        if (!clientService.createClient(client)) {
             response.put("message", "Database couldn't register the user.");
             return response;
         }

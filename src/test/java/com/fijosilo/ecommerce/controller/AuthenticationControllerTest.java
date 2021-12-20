@@ -1,7 +1,7 @@
 package com.fijosilo.ecommerce.controller;
 
-import com.fijosilo.ecommerce.dto.User;
-import com.fijosilo.ecommerce.service.UserService;
+import com.fijosilo.ecommerce.dto.Client;
+import com.fijosilo.ecommerce.service.ClientService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AuthenticationControllerTest {
     private static PasswordEncoder passwordEncoder;
-    private static UserService userService;
+    private static ClientService clientService;
 
     private static AuthenticationController authenticationController;
 
@@ -24,9 +24,9 @@ class AuthenticationControllerTest {
     static void init() {
         passwordEncoder = Mockito.mock(PasswordEncoder.class);
         Mockito.when(passwordEncoder.encode(Mockito.any(String.class))).thenReturn("*****");
-        userService = Mockito.mock(UserService.class);
-        Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(true);
-        authenticationController = new AuthenticationController(passwordEncoder, userService);
+        clientService = Mockito.mock(ClientService.class);
+        Mockito.when(clientService.createClient(Mockito.any(Client.class))).thenReturn(true);
+        authenticationController = new AuthenticationController(passwordEncoder, clientService);
     }
 
     @Test

@@ -1,7 +1,7 @@
 package com.fijosilo.ecommerce.repository;
 
-import com.fijosilo.ecommerce.dao.UserDAO;
-import com.fijosilo.ecommerce.dto.User;
+import com.fijosilo.ecommerce.dao.ClientDAO;
+import com.fijosilo.ecommerce.dto.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -15,22 +15,22 @@ import java.util.List;
 
 @Repository("JPAUserRepository")
 @Transactional
-public class JPAUserRepository implements UserDAO {
+public class JPAClientRepository implements ClientDAO {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private static final Logger log = LoggerFactory.getLogger(JPAUserRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(JPAClientRepository.class);
 
     @Override
-    public boolean createUser(User user) {
+    public boolean createClient(Client client) {
         // if the user is already in the database don't do anything
-        User dbUser = this.readUserByEmail(user.getEmail());
-        if (dbUser != null) {
+        Client dbClient = this.readClientByEmail(client.getEmail());
+        if (dbClient != null) {
             return false;
         }
         // else save the user to the database
         try {
-            entityManager.persist(user);
+            entityManager.persist(client);
             return true;
         } catch (IllegalArgumentException | PersistenceException e) {
             log.warn(e.getMessage());
@@ -39,33 +39,33 @@ public class JPAUserRepository implements UserDAO {
     }
 
     @Override
-    public User readUserByEmail(String email) {
+    public Client readClientByEmail(String email) {
         CriteriaBuilder cBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<User> cQuery = cBuilder.createQuery(User.class);
-        Root<User> root = cQuery.from(User.class);
+        CriteriaQuery<Client> cQuery = cBuilder.createQuery(Client.class);
+        Root<Client> root = cQuery.from(Client.class);
         cQuery.where(cBuilder.equal(root.get("email"), email));
-        CriteriaQuery<User> select = cQuery.select(root);
-        TypedQuery<User> typedQuery = entityManager.createQuery(select).setMaxResults(1);
-        List<User> userList = typedQuery.getResultList();
-        return userList.isEmpty() ? null : userList.get(0);
+        CriteriaQuery<Client> select = cQuery.select(root);
+        TypedQuery<Client> typedQuery = entityManager.createQuery(select).setMaxResults(1);
+        List<Client> clientList = typedQuery.getResultList();
+        return clientList.isEmpty() ? null : clientList.get(0);
     }
 
     @Override
-    public boolean updateUser(User user) {
+    public boolean updateClient(Client client) {
         // with JPA if the entity was loaded from the database
         // modifying it modifies it in the database, so we don't need to do anything
         // all we can do is make sure the entity is saved to the database
-        return this.createUser(user);
+        return this.createClient(client);
     }
 
     @Override
-    public boolean deleteUser(User user) {
+    public boolean deleteClient(Client client) {
         // we are not going to delete the actual client records, just set their account as disabled
-        user.setEnabled(false);
+        client.setEnabled(false);
         // with JPA if the entity was loaded from the database
         // modifying it modifies it in the database, so we don't need to do anything
         // all we can do is make sure the entity is saved to the database
-        return this.createUser(user);
+        return this.createClient(client);
     }
 
 }

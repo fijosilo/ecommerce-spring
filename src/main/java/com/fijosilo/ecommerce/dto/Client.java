@@ -5,9 +5,9 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 
 @Entity
-@Table(name="user",
+@Table(name="client",
         uniqueConstraints=@UniqueConstraint(columnNames={"email"}))
-public class User {
+public class Client {
     @Id
     @GenericGenerator(name = "increment", strategy = "increment")
     @GeneratedValue(generator = "increment")
@@ -23,7 +23,7 @@ public class User {
     private String role;
     private boolean isEnabled;
 
-    public User() {}
+    public Client() {}
 
     public int getId() {
         return id;
