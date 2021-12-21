@@ -67,11 +67,6 @@ class InitApplication {
 		if (!file.mkdir()) {
 			log.warn("Failed to create the image folder in the dynamic resource folder");
 		}
-		// create the thumbnail folder in the dynamic resource folder
-		file = new File(System.getenv("APPDATA") + "/SpringBoot/eCommerceApp/thumbnail");
-		if (!file.mkdir()) {
-			log.warn("Failed to create the thumbnail folder in the dynamic resource folder");
-		}
 	}
 
 }
