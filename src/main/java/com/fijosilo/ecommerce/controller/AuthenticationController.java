@@ -20,7 +20,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public HashMap<String, Object> register(@RequestParam HashMap<String, Object> params) {
+    public HashMap<String, Object> register(@RequestParam HashMap<String, String> params) {
         HashMap<String, Object> response = new HashMap<>();
         // if any validation fails response is going to have error = true
         response.put("error", true);
@@ -30,7 +30,7 @@ public class AuthenticationController {
             response.put("message", "Field first name is required.");
             return response;
         }
-        String firstName = params.get("firstName").toString();
+        String firstName = params.get("firstName");
         if (firstName.isBlank()) {
             response.put("message", "Field first name can't be blank.");
             return response;
@@ -44,7 +44,7 @@ public class AuthenticationController {
             response.put("message", "Field last name is required.");
             return response;
         }
-        String lastName = params.get("lastName").toString();
+        String lastName = params.get("lastName");
         if (lastName.isBlank()) {
             response.put("message", "Field last name can't be blank.");
             return response;
@@ -58,7 +58,7 @@ public class AuthenticationController {
             response.put("message", "Field email is required.");
             return response;
         }
-        String email = params.get("email").toString();
+        String email = params.get("email");
         if (email.isBlank()) {
             response.put("message", "Field email can't be blank.");
             return response;
@@ -72,7 +72,7 @@ public class AuthenticationController {
             response.put("message", "Field password is required.");
             return response;
         }
-        String password = params.get("password").toString();
+        String password = params.get("password");
         if (password.isBlank()) {
             response.put("message", "Field password can't be blank.");
             return response;

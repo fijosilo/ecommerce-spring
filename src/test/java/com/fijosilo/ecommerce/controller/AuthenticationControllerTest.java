@@ -17,7 +17,7 @@ class AuthenticationControllerTest {
 
     private static AuthenticationController authenticationController;
 
-    private HashMap<String, Object> params;
+    private HashMap<String, String> params;
     private HashMap<String, Object> response;
 
     @BeforeAll

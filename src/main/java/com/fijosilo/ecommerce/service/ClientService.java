@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class ClientService {
     private final ClientDAO clientDAO;
 
-    public ClientService(@Qualifier("JPAUserRepository") ClientDAO clientDAO) {
+    public ClientService(@Qualifier("JPAClientRepository") ClientDAO clientDAO) {
         this.clientDAO = clientDAO;
     }
 

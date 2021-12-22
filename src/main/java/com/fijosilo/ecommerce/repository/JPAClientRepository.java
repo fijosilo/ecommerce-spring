@@ -13,7 +13,7 @@ import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.util.List;
 
-@Repository("JPAUserRepository")
+@Repository("JPAClientRepository")
 @Transactional
 public class JPAClientRepository implements ClientDAO {
     @PersistenceContext
@@ -26,7 +26,7 @@ public class JPAClientRepository implements ClientDAO {
         // if the user is already in the database don't do anything
         Client dbClient = this.readClientByEmail(client.getEmail());
         if (dbClient != null) {
-            return false;
+            return true;
         }
         // else save the user to the database
         try {
