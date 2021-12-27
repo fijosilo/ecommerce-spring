@@ -57,10 +57,19 @@ public class ProductController {
             response.put("message", "Field brand is required.");
             return response;
         }
-        String brand = params.get("brand").toUpperCase();
-        if (brand.isBlank()) {
+        String strBrand = params.get("brand").toUpperCase();
+        if (strBrand.isBlank()) {
             response.put("message", "Field brand can't be blank.");
             return response;
+        }
+        ProductBrand productBrand = productService.readProductBrandByBrand(strBrand);
+        if (productBrand == null) {
+            productBrand = new ProductBrand();
+            productBrand.setBrand(strBrand);
+            if (!productService.createProductBrand(productBrand)) {
+                response.put("message", String.format("Database couldn't register the product brand '%s'.", strBrand));
+                return response;
+            }
         }
         // validate name
         if (!params.containsKey("name")) {
@@ -153,7 +162,7 @@ public class ProductController {
             key = String.format("images[%d]", i);
         }
         // optional validate categories
-        Set<String> categories = new HashSet<>();
+        Set<ProductCategory> productCategories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
@@ -161,7 +170,17 @@ public class ProductController {
                 response.put("message", String.format("Field categories[%d] can't be blank.", i));
                 return response;
             }
-            categories.add(params.get(key).toLowerCase());
+            String strCategory = params.get(key).toLowerCase();
+            ProductCategory productCategory = productService.readProductCategoryByCategory(strCategory);
+            if (productCategory == null) {
+                productCategory = new ProductCategory();
+                productCategory.setCategory(strCategory);
+                if (!productService.createProductCategory(productCategory)) {
+                    response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
+                    return response;
+                }
+            }
+            productCategories.add(productCategory);
             i++;
             key = String.format("categories[%d]", i);
         }
@@ -184,31 +203,6 @@ public class ProductController {
         // add epoch
         code = code + System.currentTimeMillis();
 
-        // read or create the product brand
-        ProductBrand productBrand = productService.readProductBrandByBrand(brand);
-        if (productBrand == null) {
-            productBrand = new ProductBrand();
-            productBrand.setBrand(brand);
-            if (!productService.createProductBrand(productBrand)) {
-                response.put("message", "Database couldn't register the product brand.");
-                return response;
-            }
-        }
-
-        // read or create the product categories
-        Set<ProductCategory> productCategories = new HashSet<>();
-        for (String c : categories) {
-            ProductCategory productCategory = productService.readProductCategoryByCategory(c);
-            if (productCategory == null) {
-                productCategory = new ProductCategory();
-                productCategory.setCategory(c);
-                if (!productService.createProductCategory(productCategory)) {
-                    response.put("message", "Database couldn't register the product category.");
-                    return response;
-                }
-            }
-        }
-
         // create the product
         Product product = new Product();
         product.setCode(code);
@@ -220,9 +214,8 @@ public class ProductController {
         product.setStock(stock);
         product.setThumbnailURL(thumbnail);
         product.setImagesURL(images);
-        for (ProductCategory pc : productCategories) {
-            product.addProductCategory(pc);
-            pc.addProduct(product);
+        for (ProductCategory c : productCategories) {
+            product.addProductCategory(c);
         }
         product.setEnabled(enabled);
 
@@ -259,12 +252,21 @@ public class ProductController {
             return response;
         }
         // optional validate brand
-        String brand = null;
+        ProductBrand productBrand = null;
         if (params.containsKey("brand")) {
-            brand = params.get("brand").toUpperCase();
-            if (brand.isBlank()) {
+            String strBrand = params.get("brand").toUpperCase();
+            if (strBrand.isBlank()) {
                 response.put("message", "Field brand can't be blank.");
                 return response;
+            }
+            productBrand = productService.readProductBrandByBrand(strBrand);
+            if (productBrand == null) {
+                productBrand = new ProductBrand();
+                productBrand.setBrand(strBrand);
+                if (!productService.createProductBrand(productBrand)) {
+                    response.put("message", String.format("Database couldn't register the product brand '%s'.", strBrand));
+                    return response;
+                }
             }
         }
         // optional validate name
@@ -353,7 +355,7 @@ public class ProductController {
             images = null;
         }
         // optional validate categories
-        Set<String> categories = new HashSet<>();
+        Set<ProductCategory> productCategories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
@@ -361,12 +363,19 @@ public class ProductController {
                 response.put("message", String.format("Field categories[%d] can't be blank.", i));
                 return response;
             }
-            categories.add(params.get(key).toLowerCase());
+            String strCategory = params.get(key).toLowerCase();
+            ProductCategory productCategory = productService.readProductCategoryByCategory(strCategory);
+            if (productCategory == null) {
+                productCategory = new ProductCategory();
+                productCategory.setCategory(strCategory);
+                if (!productService.createProductCategory(productCategory)) {
+                    response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
+                    return response;
+                }
+            }
+            productCategories.add(productCategory);
             i++;
             key = String.format("categories[%d]", i);
-        }
-        if (categories.size() == 0) {
-            categories = null;
         }
         // optional enabled
         Boolean enabled = null;
@@ -375,37 +384,6 @@ public class ProductController {
         }
 
         // all validations test passed
-
-        // read or create the product brand
-        ProductBrand productBrand = null;
-        if (brand != null) {
-            productBrand = productService.readProductBrandByBrand(brand);
-            if (productBrand == null) {
-                productBrand = new ProductBrand();
-                productBrand.setBrand(brand);
-                if (!productService.createProductBrand(productBrand)) {
-                    response.put("message", "Database couldn't register the product brand.");
-                    return response;
-                }
-            }
-        }
-
-        // read or create the product categories
-        Set<ProductCategory> productCategories = null;
-        if (categories != null) {
-            productCategories = new HashSet<>();
-            for (String c : categories) {
-                ProductCategory productCategory = productService.readProductCategoryByCategory(c);
-                if (productCategory == null) {
-                    productCategory = new ProductCategory();
-                    productCategory.setCategory(c);
-                    if (!productService.createProductCategory(productCategory)) {
-                        response.put("message", "Database couldn't register the product category.");
-                        return response;
-                    }
-                }
-            }
-        }
 
         // update the product
         if (productBrand != null) product.setProductBrand(productBrand);
@@ -416,9 +394,8 @@ public class ProductController {
         if (stock != null) product.setStock(stock);
         if (thumbnail != null) product.setThumbnailURL(thumbnail);
         if (images != null) product.setImagesURL(images);
-        for (ProductCategory pc : productCategories) {
-            product.addProductCategory(pc);
-            pc.addProduct(product);
+        for (ProductCategory c : productCategories) {
+            product.addProductCategory(c);
         }
         if (enabled != null) product.setEnabled(enabled);
 

@@ -3,6 +3,7 @@ package com.fijosilo.ecommerce.dto;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,8 +27,12 @@ public class Product {
     @ElementCollection
     private List<String> imagesURL;
     @ManyToMany
-    @JoinTable(name = "product_product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "product_category_id"))
-    private Set<ProductCategory> productCategories;
+    @JoinTable(
+            name = "product_product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<ProductCategory> productCategories = new HashSet<>();
     private boolean isEnabled;
 
     public Product() {}
@@ -116,12 +121,8 @@ public class Product {
         return productCategories;
     }
 
-    public void setProductCategories(Set<ProductCategory> productCategories) {
-        this.productCategories = productCategories;
-    }
-
     public void addProductCategory(ProductCategory productCategory) {
-        this.productCategories.add(productCategory);
+        productCategories.add(productCategory);
     }
 
     public boolean isEnabled() {

@@ -1,8 +1,10 @@
 package com.fijosilo.ecommerce.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -13,8 +15,12 @@ public class ProductCategory {
     @GeneratedValue(generator = "increment")
     private int id;
     private String category;
+
+    @JsonIgnore
     @ManyToMany(mappedBy = "productCategories")
-    private Set<Product> products;
+    private Set<Product> products = new HashSet<>();
+
+    public ProductCategory() {}
 
     public int getId() {
         return id;
@@ -34,14 +40,6 @@ public class ProductCategory {
 
     public Set<Product> getProducts() {
         return products;
-    }
-
-    public void setProducts(Set<Product> products) {
-        this.products = products;
-    }
-
-    public void addProduct(Product product) {
-        this.products.add(product);
     }
 
 }
