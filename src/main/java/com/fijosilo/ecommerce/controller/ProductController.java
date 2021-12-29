@@ -6,10 +6,7 @@ import com.fijosilo.ecommerce.dto.ProductCategory;
 import com.fijosilo.ecommerce.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 public class ProductController {
@@ -21,28 +18,170 @@ public class ProductController {
 
     @GetMapping("/product")
     public HashMap<String, Object> readProduct(@RequestParam HashMap<String, String> params) {
-        // param required code
-
         HashMap<String, Object> response = new HashMap<>();
+        // if any validation fails response is going to have error = true
+        response.put("error", true);
+
+        // validate code
+        if (!params.containsKey("code")) {
+            response.put("message", "Field code is required.");
+            return response;
+        }
+        String code = params.get("code");
+        if (code.isBlank()) {
+            response.put("message", "Field code can't be blank.");
+            return response;
+        }
+        Product product = productService.readProductByCode(code);
+        if (product == null) {
+            response.put("message", "Field code must be a valid product code.");
+            return response;
+        }
+
+        // all validations test passed
+
+        response.put("error", false);
+        response.put("product", product);
         return response;
     }
 
     @GetMapping("/products")
     public HashMap<String, Object> readProducts(@RequestParam HashMap<String, String> params) {
-        /*
-         * receive optional params to filter our product
-         *
-         * name
-         * price
-         *
-         * //need to add
-         * brand
-         * category
-         *
-         *
-         */
-
         HashMap<String, Object> response = new HashMap<>();
+        // if any validation fails response is going to have error = true
+        response.put("error", true);
+
+        // optional validate name
+        String name = null;
+        if (params.containsKey("name")) {
+            name = params.get("name");
+            if (name.isBlank()) {
+                response.put("message", "Field name can't be blank.");
+                return response;
+            }
+        }
+        // optional validate minimum price
+        Double minPrice = null;
+        if (params.containsKey("min_price")) {
+            String minPriceString = params.get("min_price");
+            if (minPriceString.isBlank()) {
+                response.put("message", "Field minimum price can't be blank.");
+                return response;
+            }
+            try {
+                minPrice = Double.parseDouble(minPriceString);
+            } catch (NumberFormatException e) {
+                response.put("message", "Field minimum price must be a valid rational number.");
+                return response;
+            }
+            if (minPrice < 0.0) {
+                response.put("message", "Field minimum price can't be negative.");
+                return response;
+            }
+        }
+        // optional validate maximum price
+        Double maxPrice = null;
+        if (params.containsKey("max_price")) {
+            String maxPriceString = params.get("max_price");
+            if (maxPriceString.isBlank()) {
+                response.put("message", "Field maximum price can't be blank.");
+                return response;
+            }
+            try {
+                maxPrice = Double.parseDouble(maxPriceString);
+            } catch (NumberFormatException e) {
+                response.put("message", "Field maximum price must be a valid rational number.");
+                return response;
+            }
+            if (maxPrice < 0.0) {
+                response.put("message", "Field maximum price can't be negative.");
+                return response;
+            }
+        }
+        // validate that minimum price in relation to maximum price
+        if (minPrice != null && maxPrice == null) {
+            maxPrice = Double.MAX_VALUE;
+        }
+        if (maxPrice != null && minPrice == null) {
+            minPrice = 0.0;
+        }
+        if (minPrice != null && maxPrice != null) {
+            if (minPrice > maxPrice) {
+                response.put("message", "Field minimum price can't be bigger than maximum price.");
+                return response;
+            }
+        }
+        // optional validate brand
+        String brand = null;
+        if (params.containsKey("brand")) {
+            brand = params.get("brand").toUpperCase();
+            if (brand.isBlank()) {
+                response.put("message", "Field brand can't be blank.");
+                return response;
+            }
+        }
+        // optional validate categories
+        LinkedList<String> categories = new LinkedList<>();
+        int i = 0;
+        String key = String.format("categories[%d]", i);
+        while (params.containsKey(key)) {
+            if (params.get(key).isBlank()) {
+                response.put("message", String.format("Field categories[%d] can't be blank.", i));
+                return response;
+            }
+            categories.add(params.get(key).toLowerCase());
+            i++;
+            key = String.format("categories[%d]", i);
+        }
+        if (categories.size() == 0) {
+            categories = null;
+        }
+        // optional validate maximum products per page
+        Integer maxProductsPerPage = 10;
+        if (params.containsKey("max_products_per_page")) {
+            String maxProductsPerPageString = params.get("max_products_per_page");
+            if (maxProductsPerPageString.isBlank()) {
+                response.put("message", "Field maximum products per page can't be blank.");
+                return response;
+            }
+            try {
+                maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
+            } catch (NumberFormatException e) {
+                response.put("message", "Field maximum products per page must be a valid integer number.");
+                return response;
+            }
+            if (maxProductsPerPage < 1) {
+                response.put("message", "Field maximum products per page can't be smaller than one.");
+                return response;
+            }
+        }
+        // optional validate page number
+        Integer pageNumber = 1;
+        if (params.containsKey("page_number")) {
+            String pageNumberString = params.get("page_number");
+            if (pageNumberString.isBlank()) {
+                response.put("message", "Field page number can't be blank.");
+                return response;
+            }
+            try {
+                pageNumber = Integer.parseInt(pageNumberString);
+            } catch (NumberFormatException e) {
+                response.put("message", "Field page number must be a valid integer number.");
+                return response;
+            }
+            if (pageNumber < 1) {
+                response.put("message", "Field page number can't be smaller than one.");
+                return response;
+            }
+        }
+
+        // all validations test passed
+
+        // get product list
+        List<Product> products = productService.readProductsByFilters(name, minPrice, maxPrice, brand, categories, maxProductsPerPage, pageNumber);
+
+        response.put("error", false);
+        response.put("products", products);
         return response;
     }
 
@@ -100,7 +239,7 @@ public class ProductController {
         try {
             price = Double.parseDouble(params.get("price"));
         } catch (NumberFormatException e) {
-            response.put("message", "Field price is not a valid rational number.");
+            response.put("message", "Field price must be a valid rational number.");
             return response;
         }
         if (price < 0.0) {

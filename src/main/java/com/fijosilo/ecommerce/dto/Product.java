@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name="product", uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
+@Table(name = "product", uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 public class Product {
     @Id
     @GenericGenerator(name="increment", strategy="increment")
     @GeneratedValue(generator = "increment")
-    private int id;
+    private Long id;
     private String code;
     @ManyToOne
     private ProductBrand productBrand;
@@ -27,21 +27,16 @@ public class Product {
     @ElementCollection
     private List<String> imagesURL;
     @ManyToMany
-    @JoinTable(
-            name = "product_product_category",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
     private Set<ProductCategory> productCategories = new HashSet<>();
     private boolean isEnabled;
 
     public Product() {}
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

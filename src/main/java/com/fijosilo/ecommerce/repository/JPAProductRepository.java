@@ -12,11 +12,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
+import javax.persistence.metamodel.PluralAttribute;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @Repository("JPAProductRepository")
 @Transactional
@@ -45,14 +49,53 @@ public class JPAProductRepository implements ProductDAO {
 
     @Override
     public Product readProductByCode(String code) {
-        CriteriaBuilder cBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Product> cQuery = cBuilder.createQuery(Product.class);
-        Root<Product> root = cQuery.from(Product.class);
-        cQuery.where(cBuilder.equal(root.get("code"), code));
-        CriteriaQuery<Product> select = cQuery.select(root);
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> builderQuery = criteriaBuilder.createQuery(Product.class);
+        Root<Product> productRoot = builderQuery.from(Product.class);
+        builderQuery.where(criteriaBuilder.equal(productRoot.get("code"), code));
+        CriteriaQuery<Product> select = builderQuery.select(productRoot);
         TypedQuery<Product> typedQuery = entityManager.createQuery(select).setMaxResults(1);
         List<Product> productList = typedQuery.getResultList();
         return productList.isEmpty() ? null : productList.get(0);
+    }
+
+    @Override
+    public List<Product> readProductsByFilters(String name, Double minPrice, Double maxPrice, String brand,
+                                               List<String> categories, Integer maxProductsPerPage, Integer pageNumber) {
+        // initialize the query
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> criteriaQuery = criteriaBuilder.createQuery(Product.class);
+        Metamodel metamodel = entityManager.getMetamodel();
+        EntityType Product_ = metamodel.entity(Product.class);
+        Root<Product> product = criteriaQuery.from(Product_);
+
+        // generate the query conditions
+        List<Predicate> predicates = new LinkedList<>();
+        if (name != null) {
+            predicates.add(criteriaBuilder.like(product.get("name"), name));
+        }
+        if (minPrice != null && maxPrice != null) {
+            predicates.add(criteriaBuilder.between(product.get("price"), minPrice, maxPrice));
+        }
+        if (brand != null) {
+            Join<Product, ProductBrand> productBrand = product.join(Product_.getSingularAttribute("productBrand"));
+            predicates.add(criteriaBuilder.equal(productBrand.get("brand"), brand));
+        }
+        if (categories != null) {
+            EntityType ProductCategory_ = metamodel.entity(ProductCategory.class);
+            SetJoin<Product, ProductCategory> productCategories = product.join(Product_.getSet("productCategories", ProductCategory.class));
+            for (String category : categories) {
+                productCategories.on(criteriaBuilder.equal(productCategories.get("category"), category));
+            }
+        }
+
+        // execute query and get the result
+        TypedQuery<Product> typedQuery = entityManager.createQuery(
+                criteriaQuery.select(product).where(predicates.toArray(new Predicate[]{})));
+        typedQuery.setFirstResult((pageNumber - 1) * maxProductsPerPage);
+        typedQuery.setMaxResults(maxProductsPerPage);
+        List<Product> productList = typedQuery.getResultList();
+        return productList;
     }
 
     @Override

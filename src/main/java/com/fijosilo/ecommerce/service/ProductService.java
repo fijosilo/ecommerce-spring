@@ -7,6 +7,8 @@ import com.fijosilo.ecommerce.dto.ProductCategory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ProductService {
     private final ProductDAO productDAO;
@@ -21,6 +23,11 @@ public class ProductService {
 
     public Product readProductByCode(String code) {
         return productDAO.readProductByCode(code);
+    }
+
+    public List<Product> readProductsByFilters(String name, Double minPrice, Double maxPrice, String brand,
+                                               List<String> categories, Integer maxProductsPerPage, Integer pageNumber) {
+        return productDAO.readProductsByFilters(name, minPrice, maxPrice, brand, categories, maxProductsPerPage, pageNumber);
     }
 
     public boolean updateProduct(Product product) {

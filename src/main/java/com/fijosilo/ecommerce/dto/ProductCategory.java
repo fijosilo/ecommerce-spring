@@ -13,20 +13,19 @@ public class ProductCategory {
     @Id
     @GenericGenerator(name="increment", strategy="increment")
     @GeneratedValue(generator = "increment")
-    private int id;
+    private Long id;
     private String category;
-
     @JsonIgnore
     @ManyToMany(mappedBy = "productCategories")
     private Set<Product> products = new HashSet<>();
 
     public ProductCategory() {}
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -40,6 +39,10 @@ public class ProductCategory {
 
     public Set<Product> getProducts() {
         return products;
+    }
+
+    public void addProduct(Product product) {
+        products.add(product);
     }
 
 }

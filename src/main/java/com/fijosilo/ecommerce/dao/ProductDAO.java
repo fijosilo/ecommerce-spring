@@ -4,9 +4,13 @@ import com.fijosilo.ecommerce.dto.Product;
 import com.fijosilo.ecommerce.dto.ProductBrand;
 import com.fijosilo.ecommerce.dto.ProductCategory;
 
+import java.util.List;
+
 public interface ProductDAO {
     boolean createProduct(Product product);
     Product readProductByCode(String code);
+    List<Product> readProductsByFilters(String name, Double minPrice, Double maxPrice, String brand,
+                                        List<String> categories, Integer maxProductsPerPage, Integer pageNumber);
     boolean updateProduct(Product product);
     boolean deleteProduct(Product product);
 
