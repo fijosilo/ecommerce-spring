@@ -1,7 +1,5 @@
-package com.fijosilo.ecommerce.service;
+package com.fijosilo.ecommerce.authentication;
 
-import com.fijosilo.ecommerce.dao.UserDetailsDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

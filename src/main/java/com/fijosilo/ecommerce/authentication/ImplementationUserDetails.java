@@ -1,6 +1,5 @@
-package com.fijosilo.ecommerce.configuration;
+package com.fijosilo.ecommerce.authentication;
 
-import com.fijosilo.ecommerce.dto.Client;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,9 +1,5 @@
-package com.fijosilo.ecommerce.repository;
+package com.fijosilo.ecommerce.product;
 
-import com.fijosilo.ecommerce.dao.ProductDAO;
-import com.fijosilo.ecommerce.dto.Product;
-import com.fijosilo.ecommerce.dto.ProductBrand;
-import com.fijosilo.ecommerce.dto.ProductCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -15,12 +11,9 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
-import javax.persistence.metamodel.PluralAttribute;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 @Repository("JPAProductRepository")
 @Transactional

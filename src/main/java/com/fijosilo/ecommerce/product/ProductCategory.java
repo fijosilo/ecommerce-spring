@@ -1,6 +1,7 @@
-package com.fijosilo.ecommerce.dto;
+package com.fijosilo.ecommerce.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fijosilo.ecommerce.product.Product;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;

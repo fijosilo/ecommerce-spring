@@ -1,9 +1,5 @@
-package com.fijosilo.ecommerce.service;
+package com.fijosilo.ecommerce.product;
 
-import com.fijosilo.ecommerce.dao.ProductDAO;
-import com.fijosilo.ecommerce.dto.Product;
-import com.fijosilo.ecommerce.dto.ProductBrand;
-import com.fijosilo.ecommerce.dto.ProductCategory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 

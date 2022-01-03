@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.dao;
+package com.fijosilo.ecommerce.authentication;
 
 import org.springframework.security.core.userdetails.UserDetails;
 

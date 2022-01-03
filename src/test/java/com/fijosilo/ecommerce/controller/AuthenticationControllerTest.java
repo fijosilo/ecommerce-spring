@@ -1,7 +1,8 @@
 package com.fijosilo.ecommerce.controller;
 
-import com.fijosilo.ecommerce.dto.Client;
-import com.fijosilo.ecommerce.service.ClientService;
+import com.fijosilo.ecommerce.authentication.AuthenticationController;
+import com.fijosilo.ecommerce.authentication.Client;
+import com.fijosilo.ecommerce.authentication.ClientService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

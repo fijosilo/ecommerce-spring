@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.configuration;
+package com.fijosilo.ecommerce.authentication;
 
 import java.util.Arrays;
 import java.util.HashSet;

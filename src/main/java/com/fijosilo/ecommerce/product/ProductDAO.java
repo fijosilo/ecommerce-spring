@@ -1,8 +1,4 @@
-package com.fijosilo.ecommerce.dao;
-
-import com.fijosilo.ecommerce.dto.Product;
-import com.fijosilo.ecommerce.dto.ProductBrand;
-import com.fijosilo.ecommerce.dto.ProductCategory;
+package com.fijosilo.ecommerce.product;
 
 import java.util.List;
 

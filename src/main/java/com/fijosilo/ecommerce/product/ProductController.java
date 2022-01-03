@@ -1,9 +1,5 @@
-package com.fijosilo.ecommerce.controller;
+package com.fijosilo.ecommerce.product;
 
-import com.fijosilo.ecommerce.dto.Product;
-import com.fijosilo.ecommerce.dto.ProductBrand;
-import com.fijosilo.ecommerce.dto.ProductCategory;
-import com.fijosilo.ecommerce.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;

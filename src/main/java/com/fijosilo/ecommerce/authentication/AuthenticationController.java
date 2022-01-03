@@ -1,7 +1,5 @@
-package com.fijosilo.ecommerce.controller;
+package com.fijosilo.ecommerce.authentication;
 
-import com.fijosilo.ecommerce.dto.Client;
-import com.fijosilo.ecommerce.service.ClientService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;

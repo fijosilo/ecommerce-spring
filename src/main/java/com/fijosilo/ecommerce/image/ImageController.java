@@ -1,6 +1,6 @@
-package com.fijosilo.ecommerce.controller;
+package com.fijosilo.ecommerce.image;
 
-import com.fijosilo.ecommerce.repository.JPAClientRepository;
+import com.fijosilo.ecommerce.authentication.JPAClientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,5 @@
-package com.fijosilo.ecommerce.service;
+package com.fijosilo.ecommerce.authentication;
 
-import com.fijosilo.ecommerce.dao.ClientDAO;
-import com.fijosilo.ecommerce.dto.Client;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 

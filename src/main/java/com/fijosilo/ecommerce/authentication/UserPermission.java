@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.configuration;
+package com.fijosilo.ecommerce.authentication;
 
 public enum UserPermission {
     PRODUCT_READ("product:read"),

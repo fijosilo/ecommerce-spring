@@ -1,9 +1,5 @@
-package com.fijosilo.ecommerce.repository;
+package com.fijosilo.ecommerce.authentication;
 
-import com.fijosilo.ecommerce.configuration.ImplementationUserDetails;
-import com.fijosilo.ecommerce.dao.UserDetailsDAO;
-import com.fijosilo.ecommerce.dto.Client;
-import com.fijosilo.ecommerce.service.ClientService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Repository;
 

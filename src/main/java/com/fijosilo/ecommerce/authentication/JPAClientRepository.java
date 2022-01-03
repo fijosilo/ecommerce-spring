@@ -1,7 +1,5 @@
-package com.fijosilo.ecommerce.repository;
+package com.fijosilo.ecommerce.authentication;
 
-import com.fijosilo.ecommerce.dao.ClientDAO;
-import com.fijosilo.ecommerce.dto.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;

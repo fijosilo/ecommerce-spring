@@ -1,6 +1,4 @@
-package com.fijosilo.ecommerce.dao;
-
-import com.fijosilo.ecommerce.dto.Client;
+package com.fijosilo.ecommerce.authentication;
 
 public interface ClientDAO {
     boolean createClient(Client client);

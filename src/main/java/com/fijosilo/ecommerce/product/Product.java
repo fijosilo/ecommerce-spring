@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.dto;
+package com.fijosilo.ecommerce.product;
 
 import org.hibernate.annotations.GenericGenerator;
 

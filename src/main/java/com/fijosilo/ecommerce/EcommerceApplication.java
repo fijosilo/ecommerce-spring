@@ -1,8 +1,8 @@
 package com.fijosilo.ecommerce;
 
-import com.fijosilo.ecommerce.dto.Client;
-import com.fijosilo.ecommerce.repository.JPAClientRepository;
-import com.fijosilo.ecommerce.service.ClientService;
+import com.fijosilo.ecommerce.authentication.Client;
+import com.fijosilo.ecommerce.authentication.JPAClientRepository;
+import com.fijosilo.ecommerce.authentication.ClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
