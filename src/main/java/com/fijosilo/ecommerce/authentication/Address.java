@@ -106,4 +106,6 @@ public class Address {
         this.phoneNumber = phoneNumber;
     }
 
+    // TODO: need to override the toString method
+
 }

@@ -272,16 +272,18 @@ public class ProductController {
         // optional validate discount
         double discount = 0.0;
         if (params.containsKey("discount")) {
+            int discountInteger;
             try {
-                discount = Double.parseDouble(params.get("discount"));
+                discountInteger = Integer.parseInt(params.get("discount"));
             } catch (NumberFormatException e) {
-                response.put("message", "Field discount is not a valid rational number.");
+                response.put("message", "Field discount is not a valid integer number.");
                 return response;
             }
-            if (discount < 0.0 || discount > 1.0) {
-                response.put("message", "Field discount must be between 0.0 and 1.0.");
+            if (discount < 0 || discount > 100) {
+                response.put("message", "Field discount must be between 0 and 100.");
                 return response;
             }
+            discount = discountInteger == 0 ? 0.0 : discountInteger / 100.0;
         }
         // optional validate images
         LinkedList<String> images = new LinkedList<>();
@@ -462,16 +464,18 @@ public class ProductController {
         // optional validate discount
         Double discount = null;
         if (params.containsKey("discount")) {
+            int discountInteger;
             try {
-                discount = Double.parseDouble(params.get("discount"));
+                discountInteger = Integer.parseInt(params.get("discount"));
             } catch (NumberFormatException e) {
-                response.put("message", "Field discount is not a valid rational number.");
+                response.put("message", "Field discount is not a valid integer number.");
                 return response;
             }
-            if (discount < 0.0 || discount > 1.0) {
-                response.put("message", "Field discount must be between 0.0 and 1.0.");
+            if (discount < 0 || discount > 100) {
+                response.put("message", "Field discount must be between 0 and 100.");
                 return response;
             }
+            discount = discountInteger == 0 ? 0.0 : discountInteger / 100.0;
         }
         // optional validate images
         LinkedList<String> images = new LinkedList<>();

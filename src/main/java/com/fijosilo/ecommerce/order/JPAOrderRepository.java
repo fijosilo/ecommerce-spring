@@ -26,7 +26,7 @@ public class JPAOrderRepository implements OrderDAO{
     @Override
     public boolean createOrder(Order order) {
         // if the product is already in the database don't do anything
-        Order dbOrder = this.readOrderById(order.getId());
+        Order dbOrder = this.readOrderByCode(order.getCode());
         if (dbOrder != null) {
             return true;
         }
@@ -41,11 +41,11 @@ public class JPAOrderRepository implements OrderDAO{
     }
 
     @Override
-    public Order readOrderById(Long id) {
+    public Order readOrderByCode(String code) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Order> builderQuery = criteriaBuilder.createQuery(Order.class);
         Root<Order> orderRoot = builderQuery.from(Order.class);
-        builderQuery.where(criteriaBuilder.equal(orderRoot.get("id"), id));
+        builderQuery.where(criteriaBuilder.equal(orderRoot.get("code"), code));
         CriteriaQuery<Order> select = builderQuery.select(orderRoot);
         TypedQuery<Order> typedQuery = entityManager.createQuery(select).setMaxResults(1);
         List<Order> orderList = typedQuery.getResultList();

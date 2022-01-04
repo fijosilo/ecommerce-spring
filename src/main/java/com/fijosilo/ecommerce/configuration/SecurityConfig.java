@@ -51,6 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.GET, "/image/**").permitAll()
                     .antMatchers("/admin/product").hasRole("ADMIN")
                     .antMatchers("/product", "/products").permitAll()
+                    .antMatchers("/admin/order").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 .and().exceptionHandling()
                     // resource is protected and client is not authenticated

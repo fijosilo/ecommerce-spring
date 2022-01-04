@@ -17,8 +17,8 @@ public class OrderService {
         return orderDAO.createOrder(order);
     }
 
-    public Order readOrderById(Long id) {
-        return orderDAO.readOrderById(id);
+    public Order readOrderByCode(String code) {
+        return orderDAO.readOrderByCode(code);
     }
 
     public List<Order> readOrdersByClientId(Long clientId, Integer offset, Integer limit) {
