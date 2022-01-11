@@ -1,8 +1,10 @@
 package com.fijosilo.ecommerce.order;
 
+import com.fijosilo.ecommerce.authentication.Client;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Service
@@ -21,8 +23,14 @@ public class OrderService {
         return orderDAO.readOrderByCode(code);
     }
 
-    public List<Order> readOrdersByClientId(Long clientId, Integer offset, Integer limit) {
-        return orderDAO.readOrdersByClientId(clientId, offset, limit);
+    public List<Order> readOrdersByClient(Client client, Integer maxOrdersPerPage, Integer pageNumber) {
+        return orderDAO.readOrdersByClient(client, maxOrdersPerPage, pageNumber);
+    }
+
+    public List<Order> readOrdersByFilters(Client client, Timestamp minDate, Timestamp maxDate, PaymentMethod paymentMethod,
+                                           Boolean isPaid, Boolean isFulfilled, Integer maxOrdersPerPage, Integer pageNumber) {
+        return orderDAO.readOrdersByFilters(client, minDate, maxDate, paymentMethod,
+                isPaid, isFulfilled, maxOrdersPerPage, pageNumber);
     }
 
     public boolean updateOrder(Order order) {

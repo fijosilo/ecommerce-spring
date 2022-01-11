@@ -13,6 +13,8 @@ import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
 
 @Repository("JPAOrderRepository")
@@ -53,7 +55,7 @@ public class JPAOrderRepository implements OrderDAO{
     }
 
     @Override
-    public List<Order> readOrdersByClientId(Long clientId, Integer offset, Integer limit) {
+    public List<Order> readOrdersByClient(Client client, Integer maxOrdersPerPage, Integer pageNumber) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Order> criteriaQuery = criteriaBuilder.createQuery(Order.class);
 
@@ -61,18 +63,56 @@ public class JPAOrderRepository implements OrderDAO{
         EntityType Order_ = metamodel.entity(Order.class);
         Root<Order> order = criteriaQuery.from(Order_);
         EntityType Client_ = metamodel.entity(Client.class);
-        Join<Order, Client> client = order.join(Order_.getSingularAttribute("client"));
+        Join<Order, Client> clientJoin = order.join(Order_.getSingularAttribute("client"));
 
         TypedQuery<Order> typedQuery = entityManager.createQuery(
-                criteriaQuery.select(order).where(criteriaBuilder.equal(client.get("id"), clientId)));
-        if (offset != null) {
-            typedQuery.setFirstResult(offset);
+                criteriaQuery.select(order).where(criteriaBuilder.equal(clientJoin.get("id"), client.getId())));
+        if (pageNumber != null) {
+            typedQuery.setFirstResult((pageNumber - 1) * maxOrdersPerPage);
         }
-        if (limit != null) {
-            typedQuery.setMaxResults(limit);
+        if (maxOrdersPerPage != null) {
+            typedQuery.setMaxResults(maxOrdersPerPage);
         }
         List<Order> orderList = typedQuery.getResultList();
         return orderList;
+    }
+
+    @Override
+    public List<Order> readOrdersByFilters(Client client, Timestamp minDate, Timestamp maxDate, PaymentMethod paymentMethod,
+                                           Boolean isPaid, Boolean isFulfilled, Integer maxOrdersPerPage, Integer pageNumber) {
+        // initialize the query
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Order> criteriaQuery = criteriaBuilder.createQuery(Order.class);
+        Metamodel metamodel = entityManager.getMetamodel();
+        EntityType Order_ = metamodel.entity(Order.class);
+        Root<Order> orderRoot = criteriaQuery.from(Order_);
+
+        // generate the query conditions
+        List<Predicate> predicates = new LinkedList<>();
+        if (client != null) {
+            Join<Order, Client> clientJoin = orderRoot.join(Order_.getSingularAttribute("client"));
+            predicates.add(criteriaBuilder.equal(clientJoin.get("email"), client.getEmail()));
+        }
+        if (minDate != null && maxDate != null) {
+            predicates.add(criteriaBuilder.between(orderRoot.get("date"), minDate, maxDate));
+        }
+        if (paymentMethod != null) {
+            predicates.add(criteriaBuilder.equal(orderRoot.get("paymentMethod"), paymentMethod.toString()));
+        }
+        if (isPaid != null) {
+            predicates.add(criteriaBuilder.equal(orderRoot.get("isPaid"), isPaid));
+        }
+        if (isFulfilled != null) {
+            predicates.add(criteriaBuilder.equal(orderRoot.get("isFulfilled"), isFulfilled));
+        }
+
+        // execute query and get the result
+        TypedQuery<Order> typedQuery = entityManager.createQuery(
+                criteriaQuery.select(orderRoot).where(predicates.toArray(new Predicate[]{})));
+        typedQuery.setFirstResult((pageNumber - 1) * maxOrdersPerPage);
+        typedQuery.setMaxResults(maxOrdersPerPage);
+        List<Order> orders = typedQuery.getResultList();
+        return orders;
     }
 
     @Override

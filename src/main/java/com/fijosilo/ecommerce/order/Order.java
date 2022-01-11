@@ -27,7 +27,7 @@ public class Order {
     private boolean isPaid;
     private String deliverAddress;
     private String status;
-    private boolean fulfilled;
+    private boolean isFulfilled;
 
     public Order() {}
 
@@ -65,6 +65,15 @@ public class Order {
         orderProduct.setPrice(product.getPrice());
         orderProduct.setDiscount(product.getDiscount());
         this.products.add(orderProduct);
+    }
+
+    public void remProduct(Product product) {
+        for (OrderProduct op : products) {
+            if (op.getProduct() == product) {
+                products.remove(op);
+                return;
+            }
+        }
     }
 
     public Timestamp getDate() {
@@ -124,11 +133,11 @@ public class Order {
     }
 
     public boolean isFulfilled() {
-        return fulfilled;
+        return isFulfilled;
     }
 
     public void setFulfilled(boolean fulfilled) {
-        this.fulfilled = fulfilled;
+        this.isFulfilled = fulfilled;
     }
 
 }

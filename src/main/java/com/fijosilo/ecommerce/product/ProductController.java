@@ -94,7 +94,7 @@ public class ProductController {
                 return response;
             }
         }
-        // validate that minimum price in relation to maximum price
+        // validate minimum price in relation to maximum price
         if (minPrice != null && maxPrice == null) {
             maxPrice = Double.MAX_VALUE;
         }
@@ -427,8 +427,13 @@ public class ProductController {
         // optional validate price
         Double price = null;
         if (params.containsKey("price")) {
+            String priceString = params.get("price");
+            if (priceString.isBlank()) {
+                response.put("message", "Field price can't be blank.");
+                return response;
+            }
             try {
-                price = Double.parseDouble(params.get("price"));
+                price = Double.parseDouble(priceString);
             } catch (NumberFormatException e) {
                 response.put("message", "Field price is not a valid rational number.");
                 return response;
@@ -441,8 +446,13 @@ public class ProductController {
         // optional validate stock
         Integer stock = null;
         if (params.containsKey("stock")) {
+            String stockString = params.get("stock");
+            if (stockString.isBlank()) {
+                response.put("message", "Field stock can't be blank.");
+                return response;
+            }
             try {
-                stock = Integer.parseInt(params.get("stock"));
+                stock = Integer.parseInt(stockString);
             } catch (NumberFormatException e) {
                 response.put("message", "Field stock is not a valid integer number.");
                 return response;
@@ -464,14 +474,19 @@ public class ProductController {
         // optional validate discount
         Double discount = null;
         if (params.containsKey("discount")) {
+            String stockString = params.get("discount");
+            if (stockString.isBlank()) {
+                response.put("message", "Field discount can't be blank.");
+                return response;
+            }
             int discountInteger;
             try {
-                discountInteger = Integer.parseInt(params.get("discount"));
+                discountInteger = Integer.parseInt(stockString);
             } catch (NumberFormatException e) {
                 response.put("message", "Field discount is not a valid integer number.");
                 return response;
             }
-            if (discount < 0 || discount > 100) {
+            if (discountInteger < 0 || discountInteger > 100) {
                 response.put("message", "Field discount must be between 0 and 100.");
                 return response;
             }

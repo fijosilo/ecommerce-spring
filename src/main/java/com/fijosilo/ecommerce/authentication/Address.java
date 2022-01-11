@@ -106,6 +106,13 @@ public class Address {
         this.phoneNumber = phoneNumber;
     }
 
-    // TODO: need to override the toString method
+    @Override
+    public String toString() {
+        return String.format("%s %s\n%s %d\n%s %s",
+                firstName, lastName,
+                street, houseNumber,
+                postalCode, locality
+        );
+    }
 
 }
