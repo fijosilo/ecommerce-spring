@@ -1,5 +1,6 @@
 package com.fijosilo.ecommerce.authentication;
 
+import com.fijosilo.ecommerce.address.Address;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;

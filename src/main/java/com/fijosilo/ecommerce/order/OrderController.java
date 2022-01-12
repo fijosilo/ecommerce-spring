@@ -180,7 +180,7 @@ public class OrderController {
         }
 
         // optional validate order minimum date
-        Timestamp minDate = null;
+        Long minDate = null;
         if (params.containsKey("min_order_date")) {
             String minDateString = params.get("min_order_date");
             if (minDateString.isBlank()) {
@@ -188,7 +188,7 @@ public class OrderController {
                 return response;
             }
             try {
-                minDate = Timestamp.valueOf(minDateString);
+                minDate = Long.parseLong(minDateString);
             } catch (IllegalArgumentException e) {
                 response.put("message", "Field min_order_date must follow the format yyyy-[m]m-[d]d hh:mm:ss[.f...].");
                 return response;
@@ -196,7 +196,7 @@ public class OrderController {
         }
 
         // optional validate order maximum date
-        Timestamp maxDate = null;
+        Long maxDate = null;
         if (params.containsKey("max_order_date")) {
             String maxDateString = params.get("max_order_date");
             if (maxDateString.isBlank()) {
@@ -204,8 +204,8 @@ public class OrderController {
                 return response;
             }
             try {
-                maxDate = Timestamp.valueOf(maxDateString);
-            } catch (IllegalArgumentException e) {
+                maxDate = Long.parseLong(maxDateString);
+            } catch (NumberFormatException e) {
                 response.put("message", "Field max_order_date must follow the format yyyy-[m]m-[d]d hh:mm:ss[.f...].");
                 return response;
             }
@@ -213,13 +213,13 @@ public class OrderController {
 
         // optional validate minimum date in relation to maximum date
         if (minDate != null && maxDate == null) {
-            maxDate = new Timestamp(System.currentTimeMillis());
+            maxDate = System.currentTimeMillis();
         }
         if (maxDate != null && minDate == null) {
-            minDate = new Timestamp(0L);
+            minDate = 0L;
         }
         if (minDate != null && maxDate != null) {
-            if (minDate.after(maxDate)) {
+            if (minDate > maxDate) {
                 response.put("message", "Field min_order_date can't be older than max_order_date.");
                 return response;
             }
@@ -377,6 +377,9 @@ public class OrderController {
                 return response;
             }
             products.add(product);
+
+            i++;
+            key = String.format("product_codes[%d]", i);
         }
         if (products.size() == 0) {
             response.put("message", String.format("Field product_codes is required.", i));
@@ -414,7 +417,7 @@ public class OrderController {
         for (Product p : products) {
             order.addProduct(p);
         }
-        order.setDate(new Timestamp(System.currentTimeMillis()));
+        order.setDate(System.currentTimeMillis());
         order.setChargeAddress(client.getChargeAddress().toString());
         order.setPaymentMethod(paymentMethod);
         order.setPaid(false);
@@ -451,7 +454,7 @@ public class OrderController {
             return response;
         }
 
-        // validate product codes add list
+        // optional validate product codes add list
         LinkedList<Product> addProducts = new LinkedList<>();
         int i = 0;
         String key = String.format("add_product_codes[%d]", i);
@@ -467,9 +470,12 @@ public class OrderController {
                 return response;
             }
             addProducts.add(product);
+
+            i++;
+            key = String.format("add_product_codes[%d]", i);
         }
 
-        // validate product codes remove list
+        // optional validate product codes remove list
         LinkedList<Product> remProducts = new LinkedList<>();
         i = 0;
         key = String.format("rem_product_codes[%d]", i);
@@ -485,9 +491,12 @@ public class OrderController {
                 return response;
             }
             remProducts.add(product);
+
+            i++;
+            key = String.format("rem_product_codes[%d]", i);
         }
 
-        // validate charge address
+        // optional validate charge address
         String chargeAddress = null;
         if (params.containsKey("charge_address")) {
             chargeAddress = params.get("charge_address");
@@ -497,9 +506,9 @@ public class OrderController {
             }
         }
 
-        // validate deliver address
+        // optional validate deliver address
         String deliverAddress = null;
-        if (!params.containsKey("deliver_address")) {
+        if (params.containsKey("deliver_address")) {
             deliverAddress = params.get("deliver_address");
             if (deliverAddress.isBlank()) {
                 response.put("message", "Field deliver_address can't be blank.");
@@ -507,9 +516,9 @@ public class OrderController {
             }
         }
 
-        // validate paid
+        // optional validate paid
         Boolean isPaid = null;
-        if (!params.containsKey("order_paid")) {
+        if (params.containsKey("order_paid")) {
             String isPaidString = params.get("order_paid").toLowerCase();
             if (isPaidString.isBlank()) {
                 response.put("message", "Field order_paid can't be blank.");
@@ -522,9 +531,9 @@ public class OrderController {
             isPaid = Boolean.parseBoolean(isPaidString);
         }
 
-        // status
+        // optional status
         String status = null;
-        if (!params.containsKey("status")) {
+        if (params.containsKey("status")) {
             status = params.get("status");
             if (status.isBlank()) {
                 response.put("message", "Field status can't be blank.");

@@ -1,19 +1,16 @@
 package com.fijosilo.ecommerce.order;
 
 import com.fijosilo.ecommerce.authentication.Client;
+import com.fijosilo.ecommerce.product.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import javax.transaction.Transactional;
-import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,10 +31,20 @@ public class JPAOrderRepository implements OrderDAO{
         }
         // else save the product to the database
         try {
+            // need to save every OrderProduct from Order
+            for (OrderProduct op : order.getProducts()) {
+                entityManager.persist(op);
+            }
             entityManager.persist(order);
             return true;
         } catch (IllegalArgumentException | PersistenceException e) {
             log.warn(e.getMessage());
+            // make sure no OrderProduct from Order is saved, because we don't want to keep OrderProducts without an Order
+            for (OrderProduct op : order.getProducts()) {
+                try {
+                    entityManager.remove(op);
+                } catch (IllegalArgumentException | TransactionRequiredException exception) {}
+            }
             return false;
         }
     }
@@ -50,8 +57,8 @@ public class JPAOrderRepository implements OrderDAO{
         builderQuery.where(criteriaBuilder.equal(orderRoot.get("code"), code));
         CriteriaQuery<Order> select = builderQuery.select(orderRoot);
         TypedQuery<Order> typedQuery = entityManager.createQuery(select).setMaxResults(1);
-        List<Order> orderList = typedQuery.getResultList();
-        return orderList.isEmpty() ? null : orderList.get(0);
+        List<Order> orders = typedQuery.getResultList();
+        return orders.isEmpty() ? null : orders.get(0);
     }
 
     @Override
@@ -78,7 +85,7 @@ public class JPAOrderRepository implements OrderDAO{
     }
 
     @Override
-    public List<Order> readOrdersByFilters(Client client, Timestamp minDate, Timestamp maxDate, PaymentMethod paymentMethod,
+    public List<Order> readOrdersByFilters(Client client, Long minDate, Long maxDate, PaymentMethod paymentMethod,
                                            Boolean isPaid, Boolean isFulfilled, Integer maxOrdersPerPage, Integer pageNumber) {
         // initialize the query
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();

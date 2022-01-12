@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.authentication;
+package com.fijosilo.ecommerce.address;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -17,7 +17,8 @@ public class Address {
     private String firstName;
     private String lastName;
     private String street;
-    private int houseNumber;
+    private Integer number;
+    private String apartment;
     private String postalCode;
     private String locality;
     private String country;
@@ -58,12 +59,20 @@ public class Address {
         this.street = street;
     }
 
-    public int getHouseNumber() {
-        return houseNumber;
+    public Integer getNumber() {
+        return number;
     }
 
-    public void setHouseNumber(int houseNumber) {
-        this.houseNumber = houseNumber;
+    public void setNumber(Integer number) {
+        this.number = number;
+    }
+
+    public String getApartment() {
+        return apartment;
+    }
+
+    public void setApartment(String apartment) {
+        this.apartment = apartment;
     }
 
     public String getPostalCode() {
@@ -108,9 +117,9 @@ public class Address {
 
     @Override
     public String toString() {
-        return String.format("%s %s\n%s %d\n%s %s",
+        return String.format("%s %s\n%s %d %s\n%s %s",
                 firstName, lastName,
-                street, houseNumber,
+                street, number, apartment != null ? apartment : "",
                 postalCode, locality
         );
     }

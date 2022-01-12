@@ -5,7 +5,6 @@ import com.fijosilo.ecommerce.product.Product;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class Order {
     private Client client;
     @ElementCollection
     private List<OrderProduct> products = new LinkedList<>();
-    private Timestamp date;
+    private Long date;
     private String chargeAddress;
     private String paymentMethod;
     private boolean isPaid;
@@ -76,8 +75,12 @@ public class Order {
         }
     }
 
-    public Timestamp getDate() {
+    public Long getDate() {
         return date;
+    }
+
+    public void setDate(Long date) {
+        this.date = date;
     }
 
     public Double getPrice() {
@@ -86,10 +89,6 @@ public class Order {
             price += op.getPrice() * (1.0 - op.getDiscount());
         }
         return price;
-    }
-
-    public void setDate(Timestamp date) {
-        this.date = date;
     }
 
     public String getChargeAddress() {
