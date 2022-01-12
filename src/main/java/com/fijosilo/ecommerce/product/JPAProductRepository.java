@@ -189,4 +189,31 @@ public class JPAProductRepository implements ProductDAO {
         return productList;
     }
 
+    @Override
+    public List<Product> readProductsByDescendingDiscount(Integer maxProductsPerPage, Integer pageNumber) {
+        // initialize the query
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> criteriaQuery = criteriaBuilder.createQuery(Product.class);
+        Metamodel metamodel = entityManager.getMetamodel();
+        EntityType Product_ = metamodel.entity(Product.class);
+        Root<Product> productRoot = criteriaQuery.from(Product_);
+
+        // generate the query conditions
+        List<Predicate> predicates = new LinkedList<>();
+        predicates.add(criteriaBuilder.equal(productRoot.get("isEnabled"), true));
+        predicates.add(criteriaBuilder.gt(productRoot.get("discount"), 0.0));
+
+        // execute query and get the result
+        TypedQuery<Product> typedQuery = entityManager.createQuery(
+                criteriaQuery
+                        .select(productRoot)
+                        .where(predicates.toArray(new Predicate[]{}))
+                        .orderBy(criteriaBuilder.desc(productRoot.get("discount")))
+        );
+        typedQuery.setFirstResult((pageNumber - 1) * maxProductsPerPage);
+        typedQuery.setMaxResults(maxProductsPerPage);
+        List<Product> productList = typedQuery.getResultList();
+        return productList;
+    }
+
 }

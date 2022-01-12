@@ -17,4 +17,5 @@ public interface ProductDAO {
     ProductCategory readProductCategoryByCategory(String category);
 
     List<Product> readProductsByDescendingDate(Integer maxProductsPerPage, Integer pageNumber);
+    List<Product> readProductsByDescendingDiscount(Integer maxProductsPerPage, Integer pageNumber);
 }
