@@ -354,6 +354,7 @@ public class ProductController {
         for (ProductCategory c : productCategories) {
             product.addProductCategory(c);
         }
+        product.setAdditionDate(System.currentTimeMillis());
         product.setEnabled(enabled);
 
         // save the product to the database
@@ -595,6 +596,62 @@ public class ProductController {
 
         // product got deleted
         response.put("error", false);
+        return response;
+    }
+
+    @GetMapping("/products/novelties")
+    public HashMap<String, Object> readNovelties(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> response = new HashMap<>();
+        // if any validation fails response is going to have error = true
+        response.put("error", true);
+
+        // optional validate maximum products per page
+        Integer maxProductsPerPage = 10;
+        if (params.containsKey("max_products_per_page")) {
+            String maxProductsPerPageString = params.get("max_products_per_page");
+            if (maxProductsPerPageString.isBlank()) {
+                response.put("message", "Field maximum products per page can't be blank.");
+                return response;
+            }
+            try {
+                maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
+            } catch (NumberFormatException e) {
+                response.put("message", "Field maximum products per page must be a valid integer number.");
+                return response;
+            }
+            if (maxProductsPerPage < 1) {
+                response.put("message", "Field maximum products per page can't be smaller than one.");
+                return response;
+            }
+        }
+
+        // optional validate page number
+        Integer pageNumber = 1;
+        if (params.containsKey("page_number")) {
+            String pageNumberString = params.get("page_number");
+            if (pageNumberString.isBlank()) {
+                response.put("message", "Field page number can't be blank.");
+                return response;
+            }
+            try {
+                pageNumber = Integer.parseInt(pageNumberString);
+            } catch (NumberFormatException e) {
+                response.put("message", "Field page number must be a valid integer number.");
+                return response;
+            }
+            if (pageNumber < 1) {
+                response.put("message", "Field page number can't be smaller than one.");
+                return response;
+            }
+        }
+
+        // all validations test passed
+
+        // get product list
+        List<Product> products = productService.readProductsByDescendingDate(maxProductsPerPage, pageNumber);
+
+        response.put("error", false);
+        response.put("products", products);
         return response;
     }
 

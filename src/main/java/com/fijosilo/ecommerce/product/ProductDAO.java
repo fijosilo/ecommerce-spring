@@ -15,4 +15,6 @@ public interface ProductDAO {
 
     boolean createProductCategory(ProductCategory productCategory);
     ProductCategory readProductCategoryByCategory(String category);
+
+    List<Product> readProductsByDescendingDate(Integer maxProductsPerPage, Integer pageNumber);
 }

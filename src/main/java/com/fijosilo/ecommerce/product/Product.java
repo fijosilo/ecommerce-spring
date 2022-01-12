@@ -28,6 +28,7 @@ public class Product {
     private List<String> imagesURL;
     @ManyToMany
     private Set<ProductCategory> productCategories = new HashSet<>();
+    private Long additionDate;
     private boolean isEnabled;
 
     public Product() {}
@@ -118,6 +119,14 @@ public class Product {
 
     public void addProductCategory(ProductCategory productCategory) {
         productCategories.add(productCategory);
+    }
+
+    public Long getAdditionDate() {
+        return additionDate;
+    }
+
+    public void setAdditionDate(Long additionDate) {
+        this.additionDate = additionDate;
     }
 
     public boolean isEnabled() {

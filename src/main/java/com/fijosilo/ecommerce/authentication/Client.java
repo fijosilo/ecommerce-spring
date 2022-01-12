@@ -1,5 +1,6 @@
 package com.fijosilo.ecommerce.authentication;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fijosilo.ecommerce.address.Address;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -14,6 +15,7 @@ public class Client {
     private Long id;
     private String firstName;
     private String lastName;
+    @JsonIgnore
     private String password;
     private String email;
     @ManyToOne

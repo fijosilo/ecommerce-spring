@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.POST, "/image").hasRole("ADMIN")
                     .antMatchers(HttpMethod.GET, "/image/**").permitAll()
                     .antMatchers("/admin/product").hasRole("ADMIN")
-                    .antMatchers("/product", "/products").permitAll()
+                    .antMatchers("/product", "/products", "/products/novelties").permitAll()
                     .antMatchers("/admin/order", "/admin/orders").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 .and().exceptionHandling()

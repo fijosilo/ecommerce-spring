@@ -50,4 +50,8 @@ public class ProductService {
         return productDAO.readProductCategoryByCategory(category);
     }
 
+    public List<Product> readProductsByDescendingDate(Integer maxProductsPerPage, Integer pageNumber) {
+        return productDAO.readProductsByDescendingDate(maxProductsPerPage, pageNumber);
+    }
+
 }
