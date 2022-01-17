@@ -142,7 +142,7 @@ public class JPAProductRepository implements ProductDAO {
     @Override
     public boolean createProductCategory(Category productCategory) {
         // if the product category is already in the database don't do anything
-        Category dbProductCategory = this.readProductCategoryByCategory(productCategory.getCategory());
+        Category dbProductCategory = this.readProductCategoryByCategory(productCategory.getName());
         if (dbProductCategory != null) {
             return true;
         }

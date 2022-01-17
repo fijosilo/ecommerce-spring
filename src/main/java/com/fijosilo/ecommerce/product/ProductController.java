@@ -312,7 +312,7 @@ public class ProductController {
             Category productCategory = productService.readProductCategoryByCategory(strCategory);
             if (productCategory == null) {
                 productCategory = new Category();
-                productCategory.setCategory(strCategory);
+                productCategory.setName(strCategory);
                 if (!productService.createProductCategory(productCategory)) {
                     response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
                     return response;
@@ -523,7 +523,7 @@ public class ProductController {
             Category productCategory = productService.readProductCategoryByCategory(strCategory);
             if (productCategory == null) {
                 productCategory = new Category();
-                productCategory.setCategory(strCategory);
+                productCategory.setName(strCategory);
                 if (!productService.createProductCategory(productCategory)) {
                     response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
                     return response;

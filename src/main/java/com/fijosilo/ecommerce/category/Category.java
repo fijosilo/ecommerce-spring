@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "category", uniqueConstraints = @UniqueConstraint(columnNames = {"category"}))
+@Table(name = "category", uniqueConstraints = @UniqueConstraint(columnNames = {"name"}))
 public class Category {
     @Id
     @GenericGenerator(name="increment", strategy="increment")
     @GeneratedValue(generator = "increment")
     private Long id;
-    private String category;
+    private String name;
     @JsonIgnore
     @ManyToMany(mappedBy = "categories")
     private Set<Product> products = new HashSet<>();
@@ -34,12 +34,12 @@ public class Category {
         this.id = id;
     }
 
-    public String getCategory() {
-        return category;
+    public String getName() {
+        return name;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Set<Product> getProducts() {
