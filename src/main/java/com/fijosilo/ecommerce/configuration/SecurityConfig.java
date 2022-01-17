@@ -49,9 +49,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.POST, "/register", "/login").permitAll()
                     .antMatchers(HttpMethod.POST, "/image").hasRole("ADMIN")
                     .antMatchers(HttpMethod.GET, "/image/**").permitAll()
-                    .antMatchers("/admin/product").hasRole("ADMIN")
+                    .antMatchers("/admin").hasRole("ADMIN")
                     .antMatchers("/product", "/products", "/products/novelties", "/products/promotions").permitAll()
-                    .antMatchers("/admin/order", "/admin/orders").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 .and().exceptionHandling()
                     // resource is protected and client is not authenticated

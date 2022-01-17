@@ -54,8 +54,12 @@ public class Category {
         return subCategories;
     }
 
-    public void addSubCategory(Category productCategory) {
-        subCategories.add(productCategory);
+    public void addSubCategory(Category category) {
+        subCategories.add(category);
+    }
+
+    public void remSubCategory(Category category) {
+        subCategories.remove(category);
     }
 
     public Boolean getEnabled() {
