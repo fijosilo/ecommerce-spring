@@ -1,5 +1,7 @@
 package com.fijosilo.ecommerce.product;
 
+import com.fijosilo.ecommerce.category.Category;
+
 import java.util.List;
 
 public interface ProductDAO {
@@ -13,8 +15,8 @@ public interface ProductDAO {
     boolean createProductBrand(ProductBrand productBrand);
     ProductBrand readProductBrandByBrand(String brand);
 
-    boolean createProductCategory(ProductCategory productCategory);
-    ProductCategory readProductCategoryByCategory(String category);
+    boolean createProductCategory(Category productCategory);
+    Category readProductCategoryByCategory(String category);
 
     List<Product> readProductsByDescendingDate(Integer maxProductsPerPage, Integer pageNumber);
     List<Product> readProductsByDescendingDiscount(Integer maxProductsPerPage, Integer pageNumber);

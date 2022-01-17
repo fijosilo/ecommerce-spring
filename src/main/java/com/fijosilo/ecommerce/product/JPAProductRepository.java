@@ -1,5 +1,6 @@
 package com.fijosilo.ecommerce.product;
 
+import com.fijosilo.ecommerce.category.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -75,8 +76,8 @@ public class JPAProductRepository implements ProductDAO {
             predicates.add(criteriaBuilder.equal(productBrand.get("brand"), brand));
         }
         if (categories != null) {
-            EntityType ProductCategory_ = metamodel.entity(ProductCategory.class);
-            SetJoin<Product, ProductCategory> productCategories = product.join(Product_.getSet("productCategories", ProductCategory.class));
+            EntityType ProductCategory_ = metamodel.entity(Category.class);
+            SetJoin<Product, Category> productCategories = product.join(Product_.getSet("productCategories", Category.class));
             for (String category : categories) {
                 productCategories.on(criteriaBuilder.equal(productCategories.get("category"), category));
             }
@@ -139,9 +140,9 @@ public class JPAProductRepository implements ProductDAO {
     }
 
     @Override
-    public boolean createProductCategory(ProductCategory productCategory) {
+    public boolean createProductCategory(Category productCategory) {
         // if the product category is already in the database don't do anything
-        ProductCategory dbProductCategory = this.readProductCategoryByCategory(productCategory.getCategory());
+        Category dbProductCategory = this.readProductCategoryByCategory(productCategory.getCategory());
         if (dbProductCategory != null) {
             return true;
         }
@@ -156,14 +157,14 @@ public class JPAProductRepository implements ProductDAO {
     }
 
     @Override
-    public ProductCategory readProductCategoryByCategory(String category) {
+    public Category readProductCategoryByCategory(String category) {
         CriteriaBuilder cBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<ProductCategory> cQuery = cBuilder.createQuery(ProductCategory.class);
-        Root<ProductCategory> root = cQuery.from(ProductCategory.class);
+        CriteriaQuery<Category> cQuery = cBuilder.createQuery(Category.class);
+        Root<Category> root = cQuery.from(Category.class);
         cQuery.where(cBuilder.equal(root.get("category"), category));
-        CriteriaQuery<ProductCategory> select = cQuery.select(root);
-        TypedQuery<ProductCategory> typedQuery = entityManager.createQuery(select).setMaxResults(1);
-        List<ProductCategory> productCategoryList = typedQuery.getResultList();
+        CriteriaQuery<Category> select = cQuery.select(root);
+        TypedQuery<Category> typedQuery = entityManager.createQuery(select).setMaxResults(1);
+        List<Category> productCategoryList = typedQuery.getResultList();
         return productCategoryList.isEmpty() ? null : productCategoryList.get(0);
     }
 

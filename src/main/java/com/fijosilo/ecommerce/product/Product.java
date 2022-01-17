@@ -1,5 +1,6 @@
 package com.fijosilo.ecommerce.product;
 
+import com.fijosilo.ecommerce.category.Category;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -27,7 +28,7 @@ public class Product {
     @ElementCollection
     private List<String> imagesURL;
     @ManyToMany
-    private Set<ProductCategory> productCategories = new HashSet<>();
+    private Set<Category> categories = new HashSet<>();
     private Long additionDate;
     private boolean isEnabled;
 
@@ -113,12 +114,12 @@ public class Product {
         this.imagesURL = imagesURL;
     }
 
-    public Set<ProductCategory> getProductCategories() {
-        return productCategories;
+    public Set<Category> getCategories() {
+        return categories;
     }
 
-    public void addProductCategory(ProductCategory productCategory) {
-        productCategories.add(productCategory);
+    public void addProductCategory(Category category) {
+        categories.add(category);
     }
 
     public Long getAdditionDate() {

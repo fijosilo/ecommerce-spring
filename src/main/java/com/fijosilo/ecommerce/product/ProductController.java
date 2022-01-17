@@ -1,5 +1,6 @@
 package com.fijosilo.ecommerce.product;
 
+import com.fijosilo.ecommerce.category.Category;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -299,7 +300,7 @@ public class ProductController {
             key = String.format("images[%d]", i);
         }
         // optional validate categories
-        Set<ProductCategory> productCategories = new HashSet<>();
+        Set<Category> productCategories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
@@ -308,9 +309,9 @@ public class ProductController {
                 return response;
             }
             String strCategory = params.get(key).toLowerCase();
-            ProductCategory productCategory = productService.readProductCategoryByCategory(strCategory);
+            Category productCategory = productService.readProductCategoryByCategory(strCategory);
             if (productCategory == null) {
-                productCategory = new ProductCategory();
+                productCategory = new Category();
                 productCategory.setCategory(strCategory);
                 if (!productService.createProductCategory(productCategory)) {
                     response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
@@ -351,7 +352,7 @@ public class ProductController {
         product.setStock(stock);
         product.setThumbnailURL(thumbnail);
         product.setImagesURL(images);
-        for (ProductCategory c : productCategories) {
+        for (Category c : productCategories) {
             product.addProductCategory(c);
         }
         product.setAdditionDate(System.currentTimeMillis());
@@ -510,7 +511,7 @@ public class ProductController {
             images = null;
         }
         // optional validate categories
-        Set<ProductCategory> productCategories = new HashSet<>();
+        Set<Category> productCategories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
@@ -519,9 +520,9 @@ public class ProductController {
                 return response;
             }
             String strCategory = params.get(key).toLowerCase();
-            ProductCategory productCategory = productService.readProductCategoryByCategory(strCategory);
+            Category productCategory = productService.readProductCategoryByCategory(strCategory);
             if (productCategory == null) {
-                productCategory = new ProductCategory();
+                productCategory = new Category();
                 productCategory.setCategory(strCategory);
                 if (!productService.createProductCategory(productCategory)) {
                     response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
@@ -549,7 +550,7 @@ public class ProductController {
         if (stock != null) product.setStock(stock);
         if (thumbnail != null) product.setThumbnailURL(thumbnail);
         if (images != null) product.setImagesURL(images);
-        for (ProductCategory c : productCategories) {
+        for (Category c : productCategories) {
             product.addProductCategory(c);
         }
         if (enabled != null) product.setEnabled(enabled);

@@ -1,5 +1,6 @@
 package com.fijosilo.ecommerce.product;
 
+import com.fijosilo.ecommerce.category.Category;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -42,11 +43,11 @@ public class ProductService {
         return productDAO.readProductBrandByBrand(brand);
     }
 
-    public boolean createProductCategory(ProductCategory productCategory) {
+    public boolean createProductCategory(Category productCategory) {
         return productDAO.createProductCategory(productCategory);
     }
 
-    public ProductCategory readProductCategoryByCategory(String category) {
+    public Category readProductCategoryByCategory(String category) {
         return productDAO.readProductCategoryByCategory(category);
     }
 
