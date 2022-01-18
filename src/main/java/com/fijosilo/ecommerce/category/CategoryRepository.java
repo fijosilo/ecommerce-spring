@@ -9,11 +9,13 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Repository("JPACategoryRepository")
+@Transactional
 public class CategoryRepository implements CategoryDAO {
     @PersistenceContext
     private EntityManager entityManager;
@@ -57,15 +59,6 @@ public class CategoryRepository implements CategoryDAO {
         Root<Category> categoryRoot = builderQuery.from(Category.class);
         TypedQuery<Category> typedQuery = entityManager.createQuery(builderQuery.select(categoryRoot));
         Set<Category> categories = new HashSet<>(typedQuery.getResultList());
-
-        // remove the categories that are a sub category of a category
-        Set<Category> removeCategories = new HashSet<>();
-        for (Category c : categories) {
-            for (Category s : c.getSubCategories()) {
-                removeCategories.add(s);
-            }
-        }
-        categories.removeAll(removeCategories);
 
         return categories.isEmpty() ? null : categories;
     }

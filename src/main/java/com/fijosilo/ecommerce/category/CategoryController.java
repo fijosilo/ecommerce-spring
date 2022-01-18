@@ -74,49 +74,49 @@ public class CategoryController {
             response.put("message", "Field category_name can't be blank.");
             return response;
         }
+        Category category = categoryService.readCategoryByName(categoryName);
+        if (category != null) {
+            response.put("message", "A category with the provided category_name already exists in the database.");
+            return response;
+        }
 
         // optional validate parent category
-        Category categoryParent = null;
-        if (!params.containsKey("category_parent_name")) {
+        Category parent = null;
+        if (params.containsKey("category_parent_name")) {
             String categoryParentName = params.get("category_parent_name");
             if (categoryParentName.isBlank()) {
                 response.put("message", "Field category_parent_name can't be blank.");
                 return response;
             }
-            categoryParent = categoryService.readCategoryByName(categoryParentName);
-            if (categoryParent == null) {
+            parent = categoryService.readCategoryByName(categoryParentName);
+            if (parent == null) {
                 response.put("message", "Field category_parent_name must be a valid category name.");
                 return response;
             }
         }
 
+        // optional validate enabled
+        boolean enabled = true;
+        if (params.containsKey("enabled")) {
+            enabled = Boolean.parseBoolean(params.get("enabled"));
+        }
+
         // all validations test passed
 
         // create and save the category
-        Category category = categoryService.readCategoryByName(categoryName);
-        if (category == null) {
-            category = new Category();
-            category.setName(categoryName);
-            if (!categoryService.createCategory(category)) {
-                response.put("message", "Database couldn't register the category.");
-                return response;
-            }
-        }
-        if (categoryParent != null) {
-            if (!categoryParent.getSubCategories().contains(category)) {
-                categoryParent.addSubCategory(category);
-                if (!categoryService.updateCategory(categoryParent)) {
-                    response.put("message", "Database couldn't update the parent category.");
-                    return response;
-                }
-            }
+        category = new Category();
+        category.setName(categoryName);
+        category.setParent(parent);
+        category.setEnabled(enabled);
+        if (!categoryService.createCategory(category)) {
+            response.put("message", "Database couldn't register the category.");
+            return response;
         }
 
-        // product got registered
+        // category got registered
         response.put("error", false);
         return response;
     }
-
 
     // put category
     @PutMapping("/category")
@@ -125,7 +125,7 @@ public class CategoryController {
         // if any validation fails response is going to have error = true
         response.put("error", true);
 
-        // validate name
+        // validate category
         if (!params.containsKey("category_name")) {
             response.put("message", "Field category_name is required.");
             return response;
@@ -141,9 +141,9 @@ public class CategoryController {
             return response;
         }
 
-        // optional validate new name
+        // optional validate name
         String newCategoryName = null;
-        if (!params.containsKey("category_new_name")) {
+        if (params.containsKey("category_new_name")) {
             newCategoryName = params.get("category_new_name");
             if (newCategoryName.isBlank()) {
                 response.put("message", "Field category_new_name can't be blank.");
@@ -151,73 +151,41 @@ public class CategoryController {
             }
         }
 
-        // optional validate parent category
-        Category categoryParent = null;
-        if (!params.containsKey("category_parent_name")) {
+        // optional validate parent
+        Category parent = null;
+        boolean isParentNull = false;
+        if (params.containsKey("category_parent_name")) {
             String categoryParentName = params.get("category_parent_name");
             if (categoryParentName.isBlank()) {
                 response.put("message", "Field category_parent_name can't be blank.");
                 return response;
             }
-            categoryParent = categoryService.readCategoryByName(categoryParentName);
-            if (categoryParent == null) {
-                response.put("message", "Field category_parent_name must be a valid category name.");
-                return response;
-            }
-            if (!categoryParent.getSubCategories().contains(category)) {
-                response.put("message", "Field category_parent_name must be a valid parent category name.");
-                return response;
-            }
-        }
-
-        // optional validate new parent category
-        Category newCategoryParent = null;
-        boolean isNewCategoryParentNull = false;
-        if (!params.containsKey("category_new_parent_name")) {
-            String newCategoryParentName = params.get("category_new_parent_name");
-            if (newCategoryParentName.isBlank()) {
-                response.put("message", "Field category_new_parent_name can't be blank.");
-                return response;
-            }
-            if (newCategoryParentName.equals("null")) {
-                isNewCategoryParentNull = true;
+            if (categoryParentName.equals("null")) {
+                isParentNull = true;
             } else {
-                newCategoryParent = categoryService.readCategoryByName(newCategoryParentName);
-                if (newCategoryParent == null) {
-                    response.put("message", "Field category_new_parent_name must be a valid category name.");
+                parent = categoryService.readCategoryByName(categoryParentName);
+                if (parent == null) {
+                    response.put("message", "Field category_parent_name must be a valid category name.");
                     return response;
                 }
             }
+        }
+
+        // optional validate enabled
+        Boolean enabled = null;
+        if (params.containsKey("enabled")) {
+            enabled = Boolean.parseBoolean(params.get("enabled"));
         }
 
         // all validations test passed
 
-        // update the category name
-        if (newCategoryName != null) {
-            category.setName(newCategoryName);
+        // update the category
+        if (newCategoryName != null) category.setName(newCategoryName);
+        if (isParentNull || parent != null) category.setParent(parent);
+        if (enabled != null) category.setEnabled(enabled);
+        if (!categoryService.updateCategory(category)) {
             response.put("message", "Database couldn't update the category.");
             return response;
-        }
-        // update the category parent
-        if (categoryParent != null) {
-            if (isNewCategoryParentNull) {
-                categoryParent.remSubCategory(category);
-                if (!categoryService.updateCategory(categoryParent)) {
-                    response.put("message", "Database couldn't update the category.");
-                    return response;
-                }
-            } else if (newCategoryParent != null) {
-                categoryParent.remSubCategory(category);
-                newCategoryParent.addSubCategory(category);
-                if (!categoryService.updateCategory(categoryParent)) {
-                    response.put("message", "Database couldn't update the current parent category.");
-                    return response;
-                }
-                if (!categoryService.updateCategory(newCategoryParent)) {
-                    response.put("message", "Database couldn't update the new parent category.");
-                    return response;
-                }
-            }
         }
 
         // category got updated
@@ -226,7 +194,6 @@ public class CategoryController {
     }
 
     // delete category
-
     @DeleteMapping("/category")
     public HashMap<String, Object> deleteCategory(@RequestParam HashMap<String, String> params) {
         HashMap<String, Object> response = new HashMap<>();

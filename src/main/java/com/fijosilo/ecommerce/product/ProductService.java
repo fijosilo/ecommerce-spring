@@ -1,6 +1,5 @@
 package com.fijosilo.ecommerce.product;
 
-import com.fijosilo.ecommerce.category.Category;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +22,8 @@ public class ProductService {
     }
 
     public List<Product> readProductsByFilters(String name, Double minPrice, Double maxPrice, String brand,
-                                               List<String> categories, Integer maxProductsPerPage, Integer pageNumber) {
-        return productDAO.readProductsByFilters(name, minPrice, maxPrice, brand, categories, maxProductsPerPage, pageNumber);
+                                               List<String> categoryNames, Integer maxProductsPerPage, Integer pageNumber) {
+        return productDAO.readProductsByFilters(name, minPrice, maxPrice, brand, categoryNames, maxProductsPerPage, pageNumber);
     }
 
     public boolean updateProduct(Product product) {
@@ -41,14 +40,6 @@ public class ProductService {
 
     public ProductBrand readProductBrandByBrand(String brand) {
         return productDAO.readProductBrandByBrand(brand);
-    }
-
-    public boolean createProductCategory(Category productCategory) {
-        return productDAO.createProductCategory(productCategory);
-    }
-
-    public Category readProductCategoryByCategory(String category) {
-        return productDAO.readProductCategoryByCategory(category);
     }
 
     public List<Product> readProductsByDescendingDate(Integer maxProductsPerPage, Integer pageNumber) {

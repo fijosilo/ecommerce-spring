@@ -55,7 +55,7 @@ public class JPAProductRepository implements ProductDAO {
 
     @Override
     public List<Product> readProductsByFilters(String name, Double minPrice, Double maxPrice, String brand,
-                                               List<String> categories, Integer maxProductsPerPage, Integer pageNumber) {
+                                               List<String> categoryNames, Integer maxProductsPerPage, Integer pageNumber) {
         // initialize the query
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Product> criteriaQuery = criteriaBuilder.createQuery(Product.class);
@@ -75,11 +75,11 @@ public class JPAProductRepository implements ProductDAO {
             Join<Product, ProductBrand> productBrand = product.join(Product_.getSingularAttribute("productBrand"));
             predicates.add(criteriaBuilder.equal(productBrand.get("brand"), brand));
         }
-        if (categories != null) {
-            EntityType ProductCategory_ = metamodel.entity(Category.class);
-            SetJoin<Product, Category> productCategories = product.join(Product_.getSet("productCategories", Category.class));
-            for (String category : categories) {
-                productCategories.on(criteriaBuilder.equal(productCategories.get("category"), category));
+        if (categoryNames != null) {
+            EntityType Category_ = metamodel.entity(Category.class);
+            SetJoin<Product, Category> categories = product.join(Product_.getSet("categories", Category.class));
+            for (String category : categoryNames) {
+                categories.on(criteriaBuilder.equal(categories.get("category"), category));
             }
         }
 
@@ -137,35 +137,6 @@ public class JPAProductRepository implements ProductDAO {
         TypedQuery<ProductBrand> typedQuery = entityManager.createQuery(select).setMaxResults(1);
         List<ProductBrand> productBrandList = typedQuery.getResultList();
         return productBrandList.isEmpty() ? null : productBrandList.get(0);
-    }
-
-    @Override
-    public boolean createProductCategory(Category productCategory) {
-        // if the product category is already in the database don't do anything
-        Category dbProductCategory = this.readProductCategoryByCategory(productCategory.getName());
-        if (dbProductCategory != null) {
-            return true;
-        }
-        // else save the product category to the database
-        try {
-            entityManager.persist(productCategory);
-            return true;
-        } catch (IllegalArgumentException | PersistenceException e) {
-            log.warn(e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public Category readProductCategoryByCategory(String category) {
-        CriteriaBuilder cBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Category> cQuery = cBuilder.createQuery(Category.class);
-        Root<Category> root = cQuery.from(Category.class);
-        cQuery.where(cBuilder.equal(root.get("category"), category));
-        CriteriaQuery<Category> select = cQuery.select(root);
-        TypedQuery<Category> typedQuery = entityManager.createQuery(select).setMaxResults(1);
-        List<Category> productCategoryList = typedQuery.getResultList();
-        return productCategoryList.isEmpty() ? null : productCategoryList.get(0);
     }
 
     @Override

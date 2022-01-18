@@ -1,6 +1,7 @@
 package com.fijosilo.ecommerce.product;
 
 import com.fijosilo.ecommerce.category.Category;
+import com.fijosilo.ecommerce.category.CategoryService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -8,9 +9,11 @@ import java.util.*;
 @RestController
 public class ProductController {
     private final ProductService productService;
+    private final CategoryService categoryService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/product")
@@ -300,7 +303,7 @@ public class ProductController {
             key = String.format("images[%d]", i);
         }
         // optional validate categories
-        Set<Category> productCategories = new HashSet<>();
+        Set<Category> categories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
@@ -308,17 +311,19 @@ public class ProductController {
                 response.put("message", String.format("Field categories[%d] can't be blank.", i));
                 return response;
             }
-            String strCategory = params.get(key).toLowerCase();
-            Category productCategory = productService.readProductCategoryByCategory(strCategory);
-            if (productCategory == null) {
-                productCategory = new Category();
-                productCategory.setName(strCategory);
-                if (!productService.createProductCategory(productCategory)) {
-                    response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
+            String categoryName = params.get(key).toLowerCase();
+            Category category = categoryService.readCategoryByName(categoryName);
+            if (category == null) {
+                category = new Category();
+                category.setName(categoryName);
+                category.setParent(null);
+                category.setEnabled(true);
+                if (!categoryService.createCategory(category)) {
+                    response.put("message", String.format("Database couldn't register the product category '%s'.", categoryName));
                     return response;
                 }
             }
-            productCategories.add(productCategory);
+            categories.add(category);
             i++;
             key = String.format("categories[%d]", i);
         }
@@ -352,7 +357,7 @@ public class ProductController {
         product.setStock(stock);
         product.setThumbnailURL(thumbnail);
         product.setImagesURL(images);
-        for (Category c : productCategories) {
+        for (Category c : categories) {
             product.addProductCategory(c);
         }
         product.setAdditionDate(System.currentTimeMillis());
@@ -511,7 +516,7 @@ public class ProductController {
             images = null;
         }
         // optional validate categories
-        Set<Category> productCategories = new HashSet<>();
+        Set<Category> categories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
@@ -519,17 +524,19 @@ public class ProductController {
                 response.put("message", String.format("Field categories[%d] can't be blank.", i));
                 return response;
             }
-            String strCategory = params.get(key).toLowerCase();
-            Category productCategory = productService.readProductCategoryByCategory(strCategory);
-            if (productCategory == null) {
-                productCategory = new Category();
-                productCategory.setName(strCategory);
-                if (!productService.createProductCategory(productCategory)) {
-                    response.put("message", String.format("Database couldn't register the product category '%s'.", strCategory));
+            String categoryName = params.get(key).toLowerCase();
+            Category category = categoryService.readCategoryByName(categoryName);
+            if (category == null) {
+                category = new Category();
+                category.setName(categoryName);
+                category.setParent(null);
+                category.setEnabled(true);
+                if (!categoryService.createCategory(category)) {
+                    response.put("message", String.format("Database couldn't register the product category '%s'.", categoryName));
                     return response;
                 }
             }
-            productCategories.add(productCategory);
+            categories.add(category);
             i++;
             key = String.format("categories[%d]", i);
         }
@@ -550,7 +557,7 @@ public class ProductController {
         if (stock != null) product.setStock(stock);
         if (thumbnail != null) product.setThumbnailURL(thumbnail);
         if (images != null) product.setImagesURL(images);
-        for (Category c : productCategories) {
+        for (Category c : categories) {
             product.addProductCategory(c);
         }
         if (enabled != null) product.setEnabled(enabled);

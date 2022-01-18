@@ -6,7 +6,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 @Entity
@@ -20,8 +19,8 @@ public class Category {
     @JsonIgnore
     @ManyToMany(mappedBy = "categories")
     private Set<Product> products = new HashSet<>();
-    @OneToMany
-    private Set<Category> subCategories = new HashSet<>();
+    @ManyToOne
+    private Category parent;
     private Boolean isEnabled;
 
     public Category() {}
@@ -50,16 +49,12 @@ public class Category {
         products.add(product);
     }
 
-    public Set<Category> getSubCategories() {
-        return subCategories;
+    public Category getParent() {
+        return parent;
     }
 
-    public void addSubCategory(Category category) {
-        subCategories.add(category);
-    }
-
-    public void remSubCategory(Category category) {
-        subCategories.remove(category);
+    public void setParent(Category category) {
+        parent = category;
     }
 
     public Boolean getEnabled() {
