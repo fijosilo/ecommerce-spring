@@ -2,11 +2,15 @@ package com.fijosilo.ecommerce.product;
 
 import com.fijosilo.ecommerce.category.Category;
 import com.fijosilo.ecommerce.category.CategoryService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@RestController
+@Controller
 public class ProductController {
     private final ProductService productService;
     private final CategoryService categoryService;
@@ -16,48 +20,44 @@ public class ProductController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/product")
-    public HashMap<String, Object> readProduct(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @GetMapping(value = "/product", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readProduct(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate code
         if (!params.containsKey("code")) {
-            response.put("message", "Field code is required.");
-            return response;
+            payload.put("error", "Field code is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String code = params.get("code");
         if (code.isBlank()) {
-            response.put("message", "Field code can't be blank.");
-            return response;
+            payload.put("error", "Field code can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        // validate product
         Product product = productService.readProductByCode(code);
         if (product == null) {
-            response.put("message", "Field code must be a valid product code.");
-            return response;
+            payload.put("error", "Field code must be a valid product code.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validations test passed
 
-        response.put("error", false);
-        response.put("product", product);
-        return response;
+        payload.put("product", product);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @GetMapping("/products")
-    public HashMap<String, Object> readProducts(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @GetMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readProducts(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // optional validate name
         String name = null;
         if (params.containsKey("name")) {
             name = params.get("name");
             if (name.isBlank()) {
-                response.put("message", "Field name can't be blank.");
-                return response;
+                payload.put("error", "Field name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate minimum price
@@ -65,18 +65,18 @@ public class ProductController {
         if (params.containsKey("min_price")) {
             String minPriceString = params.get("min_price");
             if (minPriceString.isBlank()) {
-                response.put("message", "Field minimum price can't be blank.");
-                return response;
+                payload.put("error", "Field minimum price can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 minPrice = Double.parseDouble(minPriceString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field minimum price must be a valid rational number.");
-                return response;
+                payload.put("error", "Field minimum price must be a valid rational number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (minPrice < 0.0) {
-                response.put("message", "Field minimum price can't be negative.");
-                return response;
+                payload.put("error", "Field minimum price can't be negative.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate maximum price
@@ -84,18 +84,18 @@ public class ProductController {
         if (params.containsKey("max_price")) {
             String maxPriceString = params.get("max_price");
             if (maxPriceString.isBlank()) {
-                response.put("message", "Field maximum price can't be blank.");
-                return response;
+                payload.put("error", "Field maximum price can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxPrice = Double.parseDouble(maxPriceString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field maximum price must be a valid rational number.");
-                return response;
+                payload.put("error", "Field maximum price must be a valid rational number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxPrice < 0.0) {
-                response.put("message", "Field maximum price can't be negative.");
-                return response;
+                payload.put("error", "Field maximum price can't be negative.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // validate minimum price in relation to maximum price
@@ -107,8 +107,8 @@ public class ProductController {
         }
         if (minPrice != null && maxPrice != null) {
             if (minPrice > maxPrice) {
-                response.put("message", "Field minimum price can't be bigger than maximum price.");
-                return response;
+                payload.put("error", "Field minimum price can't be bigger than maximum price.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate brand
@@ -116,8 +116,8 @@ public class ProductController {
         if (params.containsKey("brand")) {
             brand = params.get("brand").toUpperCase();
             if (brand.isBlank()) {
-                response.put("message", "Field brand can't be blank.");
-                return response;
+                payload.put("error", "Field brand can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate categories
@@ -126,8 +126,8 @@ public class ProductController {
         String key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
             if (params.get(key).isBlank()) {
-                response.put("message", String.format("Field categories[%d] can't be blank.", i));
-                return response;
+                payload.put("error", String.format("Field categories[%d] can't be blank.", i));
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             categories.add(params.get(key).toLowerCase());
             i++;
@@ -141,18 +141,18 @@ public class ProductController {
         if (params.containsKey("max_products_per_page")) {
             String maxProductsPerPageString = params.get("max_products_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                response.put("message", "Field maximum products per page can't be blank.");
-                return response;
+                payload.put("error", "Field maximum products per page can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field maximum products per page must be a valid integer number.");
-                return response;
+                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxProductsPerPage < 1) {
-                response.put("message", "Field maximum products per page can't be smaller than one.");
-                return response;
+                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate page number
@@ -160,18 +160,18 @@ public class ProductController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                response.put("message", "Field page number can't be blank.");
-                return response;
+                payload.put("error", "Field page number can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field page number must be a valid integer number.");
-                return response;
+                payload.put("error", "Field page number must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                response.put("message", "Field page number can't be smaller than one.");
-                return response;
+                payload.put("error", "Field page number can't be smaller than one.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -180,97 +180,96 @@ public class ProductController {
         // get product list
         List<Product> products = productService.readProductsByFilters(name, minPrice, maxPrice, brand, categories, maxProductsPerPage, pageNumber);
 
-        response.put("error", false);
-        response.put("products", products);
-        return response;
+        payload.put("products", products);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @PostMapping("/admin/product")
-    public HashMap<String, Object> addProduct(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @PostMapping(value = "/admin/product", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> addProduct(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate brand
         if (!params.containsKey("brand")) {
-            response.put("message", "Field brand is required.");
-            return response;
+            payload.put("error", "Field brand is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String strBrand = params.get("brand").toUpperCase();
         if (strBrand.isBlank()) {
-            response.put("message", "Field brand can't be blank.");
-            return response;
+            payload.put("error", "Field brand can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         ProductBrand productBrand = productService.readProductBrandByBrand(strBrand);
         if (productBrand == null) {
             productBrand = new ProductBrand();
             productBrand.setBrand(strBrand);
             if (!productService.createProductBrand(productBrand)) {
-                response.put("message", String.format("Database couldn't register the product brand '%s'.", strBrand));
-                return response;
+                payload.put("error", String.format("Database couldn't register the product brand '%s'.", strBrand));
+                return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
         // validate name
         if (!params.containsKey("name")) {
-            response.put("message", "Field name is required.");
-            return response;
+            payload.put("error", "Field name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String name = params.get("name");
         if (name.isBlank()) {
-            response.put("message", "Field name can't be blank.");
-            return response;
+            payload.put("error", "Field name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         // validate description
         if (!params.containsKey("description")) {
-            response.put("message", "Field description is required.");
-            return response;
+            payload.put("error", "Field description is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String description = params.get("description");
         if (description.isBlank()) {
-            response.put("message", "Field description can't be blank.");
-            return response;
+            payload.put("error", "Field description can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         // validate price
         if (!params.containsKey("price")) {
-            response.put("message", "Field price is required.");
-            return response;
+            payload.put("error", "Field price is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         double price;
         try {
             price = Double.parseDouble(params.get("price"));
         } catch (NumberFormatException e) {
-            response.put("message", "Field price must be a valid rational number.");
-            return response;
+            payload.put("error", "Field price must be a valid rational number.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (price < 0.0) {
-            response.put("message", "Field price can't be negative.");
-            return response;
+            payload.put("error", "Field price can't be negative.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+
         // validate stock
         if (!params.containsKey("stock")) {
-            response.put("message", "Field stock is required.");
-            return response;
+            payload.put("error", "Field stock is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         int stock;
         try {
             stock = Integer.parseInt(params.get("stock"));
         } catch (NumberFormatException e) {
-            response.put("message", "Field stock is not a valid integer number.");
-            return response;
+            payload.put("error", "Field stock is not a valid integer number.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (stock < 0) {
-            response.put("message", "Field stock can't be negative.");
-            return response;
+            payload.put("error", "Field stock can't be negative.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+
         // validate thumbnail
         if (!params.containsKey("thumbnail")) {
-            response.put("message", "Field thumbnail is required.");
-            return response;
+            payload.put("error", "Field thumbnail is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String thumbnail = params.get("thumbnail");
         if (thumbnail.isBlank()) {
-            response.put("message", "Field thumbnail can't be blank.");
-            return response;
+            payload.put("error", "Field thumbnail can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // optional validate discount
@@ -280,36 +279,38 @@ public class ProductController {
             try {
                 discountInteger = Integer.parseInt(params.get("discount"));
             } catch (NumberFormatException e) {
-                response.put("message", "Field discount is not a valid integer number.");
-                return response;
+                payload.put("error", "Field discount is not a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (discount < 0 || discount > 100) {
-                response.put("message", "Field discount must be between 0 and 100.");
-                return response;
+                payload.put("error", "Field discount must be between 0 and 100.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             discount = discountInteger == 0 ? 0.0 : discountInteger / 100.0;
         }
+
         // optional validate images
         LinkedList<String> images = new LinkedList<>();
         int i = 0;
         String key = String.format("images[%d]", i);
         while (params.containsKey(key)) {
             if (params.get(key).isBlank()) {
-                response.put("message", String.format("Field images[%d] can't be blank.", i));
-                return response;
+                payload.put("error", String.format("Field images[%d] can't be blank.", i));
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             images.add(params.get(key));
             i++;
             key = String.format("images[%d]", i);
         }
+
         // optional validate categories
         Set<Category> categories = new HashSet<>();
         i = 0;
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
             if (params.get(key).isBlank()) {
-                response.put("message", String.format("Field categories[%d] can't be blank.", i));
-                return response;
+                payload.put("error", String.format("Field categories[%d] can't be blank.", i));
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             String categoryName = params.get(key).toLowerCase();
             Category category = categoryService.readCategoryByName(categoryName);
@@ -319,14 +320,15 @@ public class ProductController {
                 category.setParent(null);
                 category.setEnabled(true);
                 if (!categoryService.createCategory(category)) {
-                    response.put("message", String.format("Database couldn't register the product category '%s'.", categoryName));
-                    return response;
+                    payload.put("error", String.format("Database couldn't register the product category '%s'.", categoryName));
+                    return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
             categories.add(category);
             i++;
             key = String.format("categories[%d]", i);
         }
+
         // optional enabled
         boolean enabled = true;
         if (params.containsKey("enabled")) {
@@ -365,51 +367,49 @@ public class ProductController {
 
         // save the product to the database
         if (!productService.createProduct(product)) {
-            response.put("message", "Database couldn't register the product.");
-            return response;
+            payload.put("error", "Database couldn't register the product.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // product got registered
-        response.put("error", false);
-        return response;
+        return new ResponseEntity<>(payload, HttpStatus.CREATED);
     }
 
-    @PutMapping("/admin/product")
-    public HashMap<String, Object> updateProduct(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @PutMapping(value = "/admin/product", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> updateProduct(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate code
         if (!params.containsKey("code")) {
-            response.put("message", "Field code is required.");
-            return response;
+            payload.put("error", "Field code is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String code = params.get("code");
         if (code.isBlank()) {
-            response.put("message", "Field code can't be blank.");
-            return response;
+            payload.put("error", "Field code can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        // validate product
         Product product = productService.readProductByCode(code);
         if (product == null) {
-            response.put("message", "Field code must contain a valid product code.");
-            return response;
+            payload.put("error", "Field code must contain a valid product code.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         // optional validate brand
         ProductBrand productBrand = null;
         if (params.containsKey("brand")) {
             String strBrand = params.get("brand").toUpperCase();
             if (strBrand.isBlank()) {
-                response.put("message", "Field brand can't be blank.");
-                return response;
+                payload.put("error", "Field brand can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             productBrand = productService.readProductBrandByBrand(strBrand);
             if (productBrand == null) {
                 productBrand = new ProductBrand();
                 productBrand.setBrand(strBrand);
                 if (!productService.createProductBrand(productBrand)) {
-                    response.put("message", String.format("Database couldn't register the product brand '%s'.", strBrand));
-                    return response;
+                    payload.put("error", String.format("Database couldn't register the product brand '%s'.", strBrand));
+                    return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
         }
@@ -418,8 +418,8 @@ public class ProductController {
         if (params.containsKey("name")) {
             name = params.get("name");
             if (name.isBlank()) {
-                response.put("message", "Field name can't be blank.");
-                return response;
+                payload.put("error", "Field name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate description
@@ -427,8 +427,8 @@ public class ProductController {
         if (params.containsKey("description")) {
             description = params.get("description");
             if (description.isBlank()) {
-                response.put("message", "Field description can't be blank.");
-                return response;
+                payload.put("error", "Field description can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate price
@@ -436,18 +436,18 @@ public class ProductController {
         if (params.containsKey("price")) {
             String priceString = params.get("price");
             if (priceString.isBlank()) {
-                response.put("message", "Field price can't be blank.");
-                return response;
+                payload.put("error", "Field price can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 price = Double.parseDouble(priceString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field price is not a valid rational number.");
-                return response;
+                payload.put("error", "Field price is not a valid rational number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (price < 0.0) {
-                response.put("message", "Field price can't be negative.");
-                return response;
+                payload.put("error", "Field price can't be negative.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate stock
@@ -455,18 +455,18 @@ public class ProductController {
         if (params.containsKey("stock")) {
             String stockString = params.get("stock");
             if (stockString.isBlank()) {
-                response.put("message", "Field stock can't be blank.");
-                return response;
+                payload.put("error", "Field stock can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 stock = Integer.parseInt(stockString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field stock is not a valid integer number.");
-                return response;
+                payload.put("error", "Field stock is not a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (stock < 0) {
-                response.put("message", "Field stock can't be negative.");
-                return response;
+                payload.put("error", "Field stock can't be negative.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate thumbnail
@@ -474,8 +474,8 @@ public class ProductController {
         if (params.containsKey("thumbnail")) {
             thumbnail = params.get("thumbnail");
             if (thumbnail.isBlank()) {
-                response.put("message", "Field thumbnail can't be blank.");
-                return response;
+                payload.put("error", "Field thumbnail can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
         // optional validate discount
@@ -483,19 +483,19 @@ public class ProductController {
         if (params.containsKey("discount")) {
             String stockString = params.get("discount");
             if (stockString.isBlank()) {
-                response.put("message", "Field discount can't be blank.");
-                return response;
+                payload.put("error", "Field discount can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             int discountInteger;
             try {
                 discountInteger = Integer.parseInt(stockString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field discount is not a valid integer number.");
-                return response;
+                payload.put("error", "Field discount is not a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (discountInteger < 0 || discountInteger > 100) {
-                response.put("message", "Field discount must be between 0 and 100.");
-                return response;
+                payload.put("error", "Field discount must be between 0 and 100.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             discount = discountInteger == 0 ? 0.0 : discountInteger / 100.0;
         }
@@ -505,8 +505,8 @@ public class ProductController {
         String key = String.format("images[%d]", i);
         while (params.containsKey(key)) {
             if (params.get(key).isBlank()) {
-                response.put("message", String.format("Field images[%d] can't be blank.", i));
-                return response;
+                payload.put("error", String.format("Field images[%d] can't be blank.", i));
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             images.add(params.get(key));
             i++;
@@ -521,8 +521,8 @@ public class ProductController {
         key = String.format("categories[%d]", i);
         while (params.containsKey(key)) {
             if (params.get(key).isBlank()) {
-                response.put("message", String.format("Field categories[%d] can't be blank.", i));
-                return response;
+                payload.put("error", String.format("Field categories[%d] can't be blank.", i));
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             String categoryName = params.get(key).toLowerCase();
             Category category = categoryService.readCategoryByName(categoryName);
@@ -532,8 +532,8 @@ public class ProductController {
                 category.setParent(null);
                 category.setEnabled(true);
                 if (!categoryService.createCategory(category)) {
-                    response.put("message", String.format("Database couldn't register the product category '%s'.", categoryName));
-                    return response;
+                    payload.put("error", String.format("Database couldn't register the product category '%s'.", categoryName));
+                    return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }
             categories.add(category);
@@ -563,73 +563,68 @@ public class ProductController {
         if (enabled != null) product.setEnabled(enabled);
 
         if (!productService.updateProduct(product)) {
-            response.put("message", "Database couldn't update the product.");
-            return response;
+            payload.put("error", "Database couldn't update the product.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // product got updated
-        response.put("error", false);
-        return response;
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @DeleteMapping("/admin/product")
-    public HashMap<String, Object> deleteProduct(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @DeleteMapping(value = "/admin/product", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> deleteProduct(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate code
         if (!params.containsKey("code")) {
-            response.put("message", "Field code is required.");
-            return response;
+            payload.put("error", "Field code is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String code = params.get("code");
         if (code.isBlank()) {
-            response.put("message", "Field code can't be blank.");
-            return response;
+            payload.put("error", "Field code can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        // validate product
         Product product = productService.readProductByCode(code);
         if (product == null) {
-            response.put("message", "Field code must contain a valid product code.");
-            return response;
+            payload.put("error", "Field code must contain a valid product code.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validations test passed
 
         // delete the product
         if (!productService.deleteProduct(product)) {
-            response.put("message", "Database couldn't delete the product.");
-            return response;
+            payload.put("error", "Database couldn't delete the product.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // product got deleted
-        response.put("error", false);
-        return response;
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @GetMapping("/products/novelties")
-    public HashMap<String, Object> readNovelties(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @GetMapping(value = "/products/novelties", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readNovelties(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // optional validate maximum products per page
         Integer maxProductsPerPage = 10;
         if (params.containsKey("max_products_per_page")) {
             String maxProductsPerPageString = params.get("max_products_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                response.put("message", "Field maximum products per page can't be blank.");
-                return response;
+                payload.put("error", "Field maximum products per page can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field maximum products per page must be a valid integer number.");
-                return response;
+                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxProductsPerPage < 1) {
-                response.put("message", "Field maximum products per page can't be smaller than one.");
-                return response;
+                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -638,18 +633,18 @@ public class ProductController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                response.put("message", "Field page number can't be blank.");
-                return response;
+                payload.put("error", "Field page number can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field page number must be a valid integer number.");
-                return response;
+                payload.put("error", "Field page number must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                response.put("message", "Field page number can't be smaller than one.");
-                return response;
+                payload.put("error", "Field page number can't be smaller than one.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -658,34 +653,31 @@ public class ProductController {
         // get product list
         List<Product> products = productService.readProductsByDescendingDate(maxProductsPerPage, pageNumber);
 
-        response.put("error", false);
-        response.put("products", products);
-        return response;
+        payload.put("products", products);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @GetMapping("/products/promotions")
-    public HashMap<String, Object> readPromotions(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @GetMapping(value = "/products/promotions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readPromotions(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // optional validate maximum products per page
         Integer maxProductsPerPage = 10;
         if (params.containsKey("max_products_per_page")) {
             String maxProductsPerPageString = params.get("max_products_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                response.put("message", "Field maximum products per page can't be blank.");
-                return response;
+                payload.put("error", "Field maximum products per page can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field maximum products per page must be a valid integer number.");
-                return response;
+                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxProductsPerPage < 1) {
-                response.put("message", "Field maximum products per page can't be smaller than one.");
-                return response;
+                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -694,18 +686,18 @@ public class ProductController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                response.put("message", "Field page number can't be blank.");
-                return response;
+                payload.put("error", "Field page number can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field page number must be a valid integer number.");
-                return response;
+                payload.put("error", "Field page number must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                response.put("message", "Field page number can't be smaller than one.");
-                return response;
+                payload.put("error", "Field page number can't be smaller than one.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -714,9 +706,8 @@ public class ProductController {
         // get product list
         List<Product> products = productService.readProductsByDescendingDiscount(maxProductsPerPage, pageNumber);
 
-        response.put("error", false);
-        response.put("products", products);
-        return response;
+        payload.put("products", products);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.info;
+package com.fijosilo.ecommerce.page;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = "title"))
-public class Info {
+public class Page {
     @Id
     @GenericGenerator(name = "increment", strategy = "increment")
     @GeneratedValue(generator = "increment")

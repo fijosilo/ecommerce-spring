@@ -3,21 +3,22 @@ package com.fijosilo.ecommerce.image;
 import com.fijosilo.ecommerce.authentication.JPAClientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/image")
+@Controller
+@RequestMapping(value = "/image")
 public class ImageController {
     private String resourceFolder;
 
@@ -27,22 +28,25 @@ public class ImageController {
         this.resourceFolder = resourceFolder;
     }
 
-    @GetMapping("/{fileParameter}")
-    public void download(@PathVariable("fileParameter") String fileName, HttpServletResponse response) {
-        // deliver the image if it is found else return page not found (404)
+    @GetMapping(value = "/{fileParameter}")
+    public ResponseEntity<byte[]> readImage(@PathVariable("fileParameter") String fileName) {
         try {
             File file = new File(resourceFolder + "/image/" + fileName);
-            response.setStatus(200);
-            response.setContentType("image/" + fileName.replaceFirst(".*[.]", ""));
-            new FileInputStream(file).transferTo(response.getOutputStream());
+            InputStream inputStream = new FileInputStream(file);
+            byte[] data = inputStream.readAllBytes();
+            MediaType contentType = MediaType.valueOf("image/" + fileName.replaceFirst(".*[.]", ""));
+
+            return ResponseEntity.ok()
+                    .contentLength(data.length)
+                    .contentType(contentType)
+                    .body(data);
         } catch (NullPointerException | SecurityException | IOException e) {
-            response.setStatus(404);
+            return ResponseEntity.notFound().build();
         }
     }
 
-    @PostMapping
-    public HashMap<String, Object> upload(@RequestParam("image") MultipartFile file) {
-        HashMap<String, Object> response = new HashMap<>();
+    @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> createImage(@RequestParam("image") MultipartFile file) {
 
         // give the image a unique name
         String name = UUID.randomUUID().toString();
@@ -63,15 +67,11 @@ public class ImageController {
             // resize the image if needed
             resizeImageIfExceeds(f, extension, 1920, 1080);
 
-            response.put("error", false);
-            response.put("url", relPath);
-            return response;
+            return new ResponseEntity<>(relPath, HttpStatus.CREATED);
         } catch (NullPointerException | IllegalStateException | IOException e) {
             log.warn(e.getMessage());
 
-            response.put("error", true);
-            response.put("message", "Server couldn't save the image.");
-            return response;
+            return new ResponseEntity<>("Server couldn't save the image.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }

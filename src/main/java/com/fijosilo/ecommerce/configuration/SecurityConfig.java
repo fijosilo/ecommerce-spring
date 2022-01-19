@@ -45,13 +45,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
+                    .antMatchers("/admin").hasRole("ADMIN")
                     .antMatchers(HttpMethod.GET, "/logout").permitAll()
                     .antMatchers(HttpMethod.POST, "/register", "/login").permitAll()
-                    .antMatchers(HttpMethod.POST, "/image").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.GET, "/image/**").permitAll()
-                    .antMatchers("/admin").hasRole("ADMIN")
                     .antMatchers("/product", "/products", "/products/novelties", "/products/promotions").permitAll()
-                    .antMatchers(HttpMethod.GET, "/info/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/image/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/**").permitAll()
                     .anyRequest().authenticated()
                 .and().exceptionHandling()
                     // resource is protected and client is not authenticated

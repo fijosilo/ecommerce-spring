@@ -1,4 +1,4 @@
-package com.fijosilo.ecommerce.info;
+package com.fijosilo.ecommerce.page;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,22 +13,22 @@ import java.util.List;
 
 @Repository
 @Transactional
-public class InfoRepository implements InfoDAO {
+public class PageRepository implements PageDAO {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final Logger log = LoggerFactory.getLogger(InfoRepository.class);
+    private final Logger log = LoggerFactory.getLogger(PageRepository.class);
 
     @Override
-    public boolean createInfo(Info info) {
-        // if the info is already in the database don't do anything
-        Info dbInfo = this.readInfoByTitle(info.getTitle());
-        if (dbInfo != null) {
+    public boolean createPage(Page page) {
+        // if the page is already in the database don't do anything
+        Page dbPage = this.readPageByTitle(page.getTitle());
+        if (dbPage != null) {
             return true;
         }
-        // else save the info to the database
+        // else save the page to the database
         try {
-            entityManager.persist(info);
+            entityManager.persist(page);
             return true;
         } catch (IllegalArgumentException | PersistenceException e) {
             log.warn(e.getMessage());
@@ -37,29 +37,29 @@ public class InfoRepository implements InfoDAO {
     }
 
     @Override
-    public Info readInfoByTitle(String title) {
+    public Page readPageByTitle(String title) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Info> builderQuery = criteriaBuilder.createQuery(Info.class);
-        Root<Info> infoRoot = builderQuery.from(Info.class);
-        builderQuery.where(criteriaBuilder.equal(infoRoot.get("title"), title));
-        CriteriaQuery<Info> select = builderQuery.select(infoRoot);
-        TypedQuery<Info> typedQuery = entityManager.createQuery(select).setMaxResults(1);
-        List<Info> infoList = typedQuery.getResultList();
-        return infoList.isEmpty() ? null : infoList.get(0);
+        CriteriaQuery<Page> builderQuery = criteriaBuilder.createQuery(Page.class);
+        Root<Page> pageRoot = builderQuery.from(Page.class);
+        builderQuery.where(criteriaBuilder.equal(pageRoot.get("title"), title));
+        CriteriaQuery<Page> select = builderQuery.select(pageRoot);
+        TypedQuery<Page> typedQuery = entityManager.createQuery(select).setMaxResults(1);
+        List<Page> pages = typedQuery.getResultList();
+        return pages.isEmpty() ? null : pages.get(0);
     }
 
     @Override
-    public boolean updateInfo(Info info) {
+    public boolean updatePage(Page page) {
         // with JPA if the entity was loaded from the database
         // modifying it modifies it in the database, so we don't need to do anything
         // all we can do is make sure the entity is saved to the database
-        return this.createInfo(info);
+        return this.createPage(page);
     }
 
     @Override
-    public boolean deleteInfo(Info info) {
+    public boolean deletePage(Page page) {
         try {
-            entityManager.remove(info);
+            entityManager.remove(page);
             return true;
         } catch (IllegalArgumentException | TransactionRequiredException e) {
             log.warn(e.getMessage());
