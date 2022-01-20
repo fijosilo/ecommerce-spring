@@ -1,12 +1,16 @@
 package com.fijosilo.ecommerce.category;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Set;
 
-@RestController
-@RequestMapping("/admin")
+@Controller
+@RequestMapping(value = "/admin")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -14,70 +18,62 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    // get category
-    @GetMapping("/category")
-    public HashMap<String, Object> readCategory(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @GetMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readCategory(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate name
         if (!params.containsKey("category_name")) {
-            response.put("message", "Field category_name is required.");
-            return response;
+            payload.put("error", "Field category_name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String categoryName = params.get("category_name");
         if (categoryName.isBlank()) {
-            response.put("message", "Field category_name can't be blank.");
-            return response;
+            payload.put("error", "Field category_name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         Category category = categoryService.readCategoryByName(categoryName);
         if (category == null) {
-            response.put("message", "Field category_name must be a valid category name.");
-            return response;
+            payload.put("error", "Field category_name must be a valid category name.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validations test passed
 
-        response.put("error", false);
-        response.put("category", category);
-        return response;
+        payload.put("category", category);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    // get categories
-    @GetMapping("/categories")
-    public HashMap<String, Object> readCategories() {
-        HashMap<String, Object> response = new HashMap<>();
+    @GetMapping(value = "/categories", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readCategories() {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // read categories
         Set<Category> categories = categoryService.readCategories();
 
-        response.put("error", false);
-        response.put("categories", categories);
-        return response;
+        payload.put("categories", categories);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    // post category
-    @PostMapping("/category")
-    public HashMap<String, Object> addCategory(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @PostMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> addCategory(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
-        // validate category name
+        // validate name
         if (!params.containsKey("category_name")) {
-            response.put("message", "Field category_name is required.");
-            return response;
+            payload.put("error", "Field category_name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String categoryName = params.get("category_name");
         if (categoryName.isBlank()) {
-            response.put("message", "Field category_name can't be blank.");
-            return response;
+            payload.put("error", "Field category_name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        // validate that the category doesn't exist
         Category category = categoryService.readCategoryByName(categoryName);
         if (category != null) {
-            response.put("message", "A category with the provided category_name already exists in the database.");
-            return response;
+            payload.put("error", "A category with the provided category_name already exists in the database.");
+            return new ResponseEntity<>(payload, HttpStatus.CONFLICT);
         }
 
         // optional validate parent category
@@ -85,13 +81,13 @@ public class CategoryController {
         if (params.containsKey("category_parent_name")) {
             String categoryParentName = params.get("category_parent_name");
             if (categoryParentName.isBlank()) {
-                response.put("message", "Field category_parent_name can't be blank.");
-                return response;
+                payload.put("error", "Field category_parent_name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             parent = categoryService.readCategoryByName(categoryParentName);
             if (parent == null) {
-                response.put("message", "Field category_parent_name must be a valid category name.");
-                return response;
+                payload.put("error", "Field category_parent_name must be a valid category name.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -109,64 +105,61 @@ public class CategoryController {
         category.setParent(parent);
         category.setEnabled(enabled);
         if (!categoryService.createCategory(category)) {
-            response.put("message", "Database couldn't register the category.");
-            return response;
+            payload.put("error", "Database couldn't register the category.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // category got registered
-        response.put("error", false);
-        return response;
+        return new ResponseEntity<>(payload, HttpStatus.CREATED);
     }
 
-    // put category
-    @PutMapping("/category")
-    public HashMap<String, Object> updateCategory(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @PutMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> updateCategory(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
-        // validate category
+        // validate name
         if (!params.containsKey("category_name")) {
-            response.put("message", "Field category_name is required.");
-            return response;
+            payload.put("error", "Field category_name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String categoryName = params.get("category_name");
         if (categoryName.isBlank()) {
-            response.put("message", "Field category_name can't be blank.");
-            return response;
+            payload.put("error", "Field category_name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        // validate category
         Category category = categoryService.readCategoryByName(categoryName);
         if (category == null) {
-            response.put("message", "Field category_name must be a valid category name.");
-            return response;
+            payload.put("error", "Field category_name must be a valid category name.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
-        // optional validate name
+        // optional validate new name
         String newCategoryName = null;
         if (params.containsKey("category_new_name")) {
             newCategoryName = params.get("category_new_name");
             if (newCategoryName.isBlank()) {
-                response.put("message", "Field category_new_name can't be blank.");
-                return response;
+                payload.put("error", "Field category_new_name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
-        // optional validate parent
+        // optional validate new parent
         Category parent = null;
         boolean isParentNull = false;
         if (params.containsKey("category_parent_name")) {
             String categoryParentName = params.get("category_parent_name");
             if (categoryParentName.isBlank()) {
-                response.put("message", "Field category_parent_name can't be blank.");
-                return response;
+                payload.put("error", "Field category_parent_name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (categoryParentName.equals("null")) {
                 isParentNull = true;
             } else {
                 parent = categoryService.readCategoryByName(categoryParentName);
                 if (parent == null) {
-                    response.put("message", "Field category_parent_name must be a valid category name.");
-                    return response;
+                    payload.put("error", "Field category_parent_name must be a valid category name.");
+                    return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
                 }
             }
         }
@@ -184,49 +177,44 @@ public class CategoryController {
         if (isParentNull || parent != null) category.setParent(parent);
         if (enabled != null) category.setEnabled(enabled);
         if (!categoryService.updateCategory(category)) {
-            response.put("message", "Database couldn't update the category.");
-            return response;
+            payload.put("error", "Database couldn't update the category.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // category got updated
-        response.put("error", false);
-        return response;
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    // delete category
-    @DeleteMapping("/category")
-    public HashMap<String, Object> deleteCategory(@RequestParam HashMap<String, String> params) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @DeleteMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> deleteCategory(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate name
         if (!params.containsKey("category_name")) {
-            response.put("message", "Field category_name is required.");
-            return response;
+            payload.put("error", "Field category_name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String categoryName = params.get("category_name");
         if (categoryName.isBlank()) {
-            response.put("message", "Field category_name can't be blank.");
-            return response;
+            payload.put("error", "Field category_name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         Category category = categoryService.readCategoryByName(categoryName);
         if (category == null) {
-            response.put("message", "Field category_name must be a valid category name.");
-            return response;
+            payload.put("error", "Field category_name must be a valid category name.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validations test passed
 
         // delete the category
         if (!categoryService.deleteCategory(category)) {
-            response.put("message", "Database couldn't delete the category.");
-            return response;
+            payload.put("error", "Database couldn't delete the category.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // category got deleted
-        response.put("error", false);
-        return response;
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
 }

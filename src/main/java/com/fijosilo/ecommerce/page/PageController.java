@@ -16,44 +16,57 @@ public class PageController {
         this.pageService = pageService;
     }
 
-    @GetMapping(value = "/{title}", produces = MediaType.TEXT_HTML_VALUE)
-    public ResponseEntity<String> readPage(@PathVariable("title") String title) {
+    @GetMapping(value = "/{title}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readPage(@PathVariable("title") String title) {
+        HashMap<String, Object> payload = new HashMap<>();
+
         // validate title
         if (title.isBlank()) {
-            return new ResponseEntity<>("This page was not found.", HttpStatus.NOT_FOUND);
+            payload.put("error", "This page was not found.");
+            return new ResponseEntity<>(payload, HttpStatus.NOT_FOUND);
         }
+        // validate page
         Page page = pageService.readPageByTitle(title);
         if (page == null) {
-            return new ResponseEntity<>("This page was not found.", HttpStatus.NOT_FOUND);
+            payload.put("error", "This page was not found.");
+            return new ResponseEntity<>(payload, HttpStatus.NOT_FOUND);
         }
 
         // return content
-        return new ResponseEntity<>(page.getContent(), HttpStatus.OK);
+        payload.put("page", page.getContent());
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/admin/page", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> createPage(@RequestParam HashMap<String, String> params) {
+    @PostMapping(value = "/admin/page", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> createPage(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
+
         // validate title
         if (!params.containsKey("title")) {
-            return new ResponseEntity<>("Field title is required.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String title = params.get("title");
         if (title.isBlank()) {
-            return new ResponseEntity<>("Field title can't be blank.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         // validate that the page doesn't exist
         Page page = pageService.readPageByTitle(title);
         if (page != null) {
-            return new ResponseEntity<>("Field title can't be the title of an already existing page.", HttpStatus.CONFLICT);
+            payload.put("error", "Field title can't be the title of an already existing page.");
+            return new ResponseEntity<>(payload, HttpStatus.CONFLICT);
         }
 
         // validate content
         if (!params.containsKey("content")) {
-            return new ResponseEntity<>("Field content is required.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field content is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String content = params.get("content");
         if (content.isBlank()) {
-            return new ResponseEntity<>("Field content can't be blank.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field content can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validations test passed
@@ -63,27 +76,33 @@ public class PageController {
         page.setTitle(title);
         page.setContent(content);
         if (!pageService.createPage(page)) {
-            return new ResponseEntity<>("Database couldn't register the page.", HttpStatus.INTERNAL_SERVER_ERROR);
+            payload.put("error", "Database couldn't register the page.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // info got registered
-        return new ResponseEntity<>("", HttpStatus.CREATED);
+        return new ResponseEntity<>(payload, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/admin/page", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> updatePage(@RequestParam HashMap<String, String> params) {
+    @PutMapping(value = "/admin/page", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> updatePage(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
+
         // validate title
         if (!params.containsKey("title")) {
-            return new ResponseEntity<>("Field title is required.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String title = params.get("title");
         if (title.isBlank()) {
-            return new ResponseEntity<>("Field title can't be blank.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         // validate that the page does exist
         Page page = pageService.readPageByTitle(title);
         if (page == null) {
-            return new ResponseEntity<>("Field title must be a valid page title.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title must be a valid page title.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // optional validate content
@@ -91,7 +110,8 @@ public class PageController {
         if (params.containsKey("content")) {
             content = params.get("content");
             if (content.isBlank()) {
-                return new ResponseEntity<>("Field content can't be blank.", HttpStatus.UNPROCESSABLE_ENTITY);
+                payload.put("error", "Field content can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -100,38 +120,45 @@ public class PageController {
         // update the page
         if (content != null) page.setContent(content);
         if (!pageService.updatePage(page)) {
-            return new ResponseEntity<>("Database couldn't update the page.", HttpStatus.INTERNAL_SERVER_ERROR);
+            payload.put("error", "Database couldn't update the page.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // page got updated
-        return new ResponseEntity<>("", HttpStatus.OK);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/admin/page", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> deletePage(@RequestParam HashMap<String, String> params) {
+    @DeleteMapping(value = "/admin/page", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> deletePage(@RequestParam HashMap<String, String> params) {
+        HashMap<String, Object> payload = new HashMap<>();
+
         // validate title
         if (!params.containsKey("title")) {
-            return new ResponseEntity<>("Field title is required.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String title = params.get("title");
         if (title.isBlank()) {
-            return new ResponseEntity<>("Field title can't be blank.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         // validate that the page does exist
         Page page = pageService.readPageByTitle(title);
         if (page == null) {
-            return new ResponseEntity<>("Field title must be a valid page title.", HttpStatus.UNPROCESSABLE_ENTITY);
+            payload.put("error", "Field title must be a valid page title.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validations test passed
 
         // delete the page
         if (!pageService.deletePage(page)) {
-            return new ResponseEntity<>("Database couldn't delete the page.", HttpStatus.INTERNAL_SERVER_ERROR);
+            payload.put("error", "Database couldn't delete the page.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // page got deleted
-        return new ResponseEntity<>("", HttpStatus.OK);
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
 }

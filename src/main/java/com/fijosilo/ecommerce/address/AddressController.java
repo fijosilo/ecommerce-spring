@@ -2,12 +2,16 @@ package com.fijosilo.ecommerce.address;
 
 import com.fijosilo.ecommerce.authentication.Client;
 import com.fijosilo.ecommerce.authentication.ClientService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
-@RestController
+@Controller
 public class AddressController {
     private final ClientService clientService;
     private final AddressService addressService;
@@ -17,49 +21,43 @@ public class AddressController {
         this.addressService = addressService;
     }
 
-    // read the addresses of the current(loged in) client
-    @GetMapping("/client/addresses")
-    public HashMap<String, Object> readAddresses(Authentication authentication) {
-        HashMap<String, Object> response = new HashMap<>();
+    // read the addresses of the current(logged in) client
+    @GetMapping(value = "/client/addresses", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> readAddresses(Authentication authentication) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
         Client client = clientService.readClientByEmail(authentication.getName());
         if (client == null) {
-            response.put("error", true);
-            response.put("message", "This endpoint must be accessed while authenticated.");
-            return response;
+            return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
 
         // return the charge and deliver addresses
-        response.put("error", false);
-        response.put("charge_address", client.getChargeAddress());
-        response.put("deliver_address", client.getDeliverAddress());
-        return response;
+        payload.put("charge_address", client.getChargeAddress());
+        payload.put("deliver_address", client.getDeliverAddress());
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
-    // creates and assigns a new charge or deliver address to current(loged in) the client
-    @PostMapping("/client/address")
-    public HashMap<String, Object> createAddress(@RequestParam HashMap<String, String> params, Authentication authentication) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    // creates and assigns a new charge or deliver address to current(logged in) the client
+    @PostMapping(value = "/client/address", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> createAddress(@RequestParam HashMap<String, String> params, Authentication authentication) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
         Client client = clientService.readClientByEmail(authentication.getName());
         if (client == null) {
-            response.put("message", "This endpoint must be accessed while authenticated.");
-            return response;
+            return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
 
         // validate address purpose
         if (!params.containsKey("address_purpose")) {
-            response.put("message", "Field address_purpose is required.");
-            return response;
+            payload.put("error", "Field address_purpose is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String addressPurposeString = params.get("address_purpose").toUpperCase();
         if (addressPurposeString.isBlank()) {
-            response.put("message", "Field address_purpose can't be blank.");
-            return response;
+            payload.put("error", "Field address_purpose can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         AddressPurpose addressPurpose = null;
         for (AddressPurpose ap : AddressPurpose.values()) {
@@ -68,73 +66,73 @@ public class AddressController {
             }
         }
         if (addressPurpose == null) {
-            response.put("message", "Field address_purpose must be a valid address purpose(CHARGE, DELIVER).");
-            return response;
+            payload.put("error", "Field address_purpose must be a valid address purpose(CHARGE, DELIVER).");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate firstName
         if (!params.containsKey("first_name")) {
-            response.put("message", "Field first_name is required.");
-            return response;
+            payload.put("error", "Field first_name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String firstName = params.get("first_name").toLowerCase();
         firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1);
         if (firstName.isBlank()) {
-            response.put("message", "Field first_name can't be blank.");
-            return response;
+            payload.put("error", "Field first_name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (!firstName.matches("\\p{L}+")) {
-            response.put("message", "Field first_name can contain only letters.");
-            return response;
+            payload.put("error", "Field first_name can contain only letters.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate lastName
         if (!params.containsKey("last_name")) {
-            response.put("message", "Field last_name is required.");
-            return response;
+            payload.put("error", "Field last_name is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String lastName = params.get("last_name").toLowerCase();
         lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1);
         if (lastName.isBlank()) {
-            response.put("message", "Field last_name can't be blank.");
-            return response;
+            payload.put("error", "Field last_name can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (!lastName.matches("\\p{L}+")) {
-            response.put("message", "Field last_name can contain only letters.");
-            return response;
+            payload.put("error", "Field last_name can contain only letters.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate street
         if (!params.containsKey("street")) {
-            response.put("message", "Field street is required.");
-            return response;
+            payload.put("error", "Field street is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String street = params.get("street");
         if (street.isBlank()) {
-            response.put("message", "Field street can't be blank.");
-            return response;
+            payload.put("error", "Field street can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate number
         if (!params.containsKey("number")) {
-            response.put("message", "Field number is required.");
-            return response;
+            payload.put("error", "Field number is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String numberString = params.get("number");
         if (numberString.isBlank()) {
-            response.put("message", "Field number can't be blank.");
-            return response;
+            payload.put("error", "Field number can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         Integer number = null;
         try {
             number = Integer.parseInt(numberString);
         } catch (NumberFormatException e) {
-            response.put("message", "Field number must be a valid integer number.");
-            return response;
+            payload.put("error", "Field number must be a valid integer number.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (number < 0) {
-            response.put("message", "Field number can't be negative.");
-            return response;
+            payload.put("error", "Field number can't be negative.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // optional validate apartment
@@ -142,88 +140,88 @@ public class AddressController {
         if (params.containsKey("apartment")) {
             apartment = params.get("apartment").replaceAll("\\p{Z}", "").toUpperCase();
             if (apartment.isBlank()) {
-                response.put("message", "Field apartment can't be blank.");
-                return response;
+                payload.put("error", "Field apartment can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!apartment.matches("\\p{N}+\\p{L}{0,2}")) {
-                response.put("message", "Field apartment must follow the format 'N' or 'N LL' where N is a number and L is a letter.");
-                return response;
+                payload.put("error", "Field apartment must follow the format 'N' or 'N LL' where N is a number and L is a letter.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
         // validate postalCode
         if (!params.containsKey("postal_code")) {
-            response.put("message", "Field postal_code is required.");
-            return response;
+            payload.put("error", "Field postal_code is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String postalCode = params.get("postal_code").replaceAll("\\p{Z}", "");
         if (postalCode.isBlank()) {
-            response.put("message", "Field postal_code can't be blank.");
-            return response;
+            payload.put("error", "Field postal_code can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (!postalCode.matches("\\p{N}{4}[-]\\p{N}{3}")) {
-            response.put("message", "Field postal_code must follow the format 'DDDD-DDD' where D is a digit.");
-            return response;
+            payload.put("error", "Field postal_code must follow the format 'DDDD-DDD' where D is a digit.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate locality
         if (!params.containsKey("locality")) {
-            response.put("message", "Field locality is required.");
-            return response;
+            payload.put("error", "Field locality is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String locality = params.get("locality");
         if (locality.isBlank()) {
-            response.put("message", "Field locality can't be blank.");
-            return response;
+            payload.put("error", "Field locality can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate country
         if (!params.containsKey("country")) {
-            response.put("message", "Field country is required.");
-            return response;
+            payload.put("error", "Field country is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String country = params.get("country");
         if (country.isBlank()) {
-            response.put("message", "Field country can't be blank.");
-            return response;
+            payload.put("error", "Field country can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate taxNumber
         if (!params.containsKey("tax_number")) {
-            response.put("message", "Field tax_number is required.");
-            return response;
+            payload.put("error", "Field tax_number is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String taxNumber = params.get("tax_number").replaceAll("\\p{Z}", "");
         if (taxNumber.isBlank()) {
-            response.put("message", "Field tax_number can't be blank.");
-            return response;
+            payload.put("error", "Field tax_number can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (!taxNumber.matches("\\p{N}*")) {
-            response.put("message", "Field tax_number must contain only digits.");
-            return response;
+            payload.put("error", "Field tax_number must contain only digits.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (taxNumber.length() != 9) {
-            response.put("message", "Field tax_number must contain nine digits.");
-            return response;
+            payload.put("error", "Field tax_number must contain nine digits.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate phoneNumber
         if (!params.containsKey("phone_number")) {
-            response.put("message", "Field phone_number is required.");
-            return response;
+            payload.put("error", "Field phone_number is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String phoneNumber = params.get("phone_number").replaceAll("\\p{Z}", "");
         if (phoneNumber.isBlank()) {
-            response.put("message", "Field phone_number can't be blank.");
-            return response;
+            payload.put("error", "Field phone_number can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (!phoneNumber.matches("\\p{N}*")) {
-            response.put("message", "Field phone_number must contain only digits.");
-            return response;
+            payload.put("error", "Field phone_number must contain only digits.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (phoneNumber.length() != 9) {
-            response.put("message", "Field phone_number must contain nine digits.");
-            return response;
+            payload.put("error", "Field phone_number must contain nine digits.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validation tests passed
@@ -255,34 +253,30 @@ public class AddressController {
         }
         clientService.updateClient(client);
 
-        //return response
-        response.put("error", false);
-        return response;
+        // return response
+        return new ResponseEntity<>(payload, HttpStatus.CREATED);
     }
 
-    // update client address of type if current(loged in) client address of same type is not null
-    @PutMapping("/client/address")
-    public HashMap<String, Object> updateAddress(@RequestParam HashMap<String, String> params, Authentication authentication) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    // update client address of type if current(logged in) client address of same type is not null
+    @PutMapping(value = "/client/address", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> updateAddress(@RequestParam HashMap<String, String> params, Authentication authentication) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
         Client client = clientService.readClientByEmail(authentication.getName());
         if (client == null) {
-            response.put("message", "This endpoint must be accessed while authenticated.");
-            return response;
+            return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
 
         // validate address purpose
         if (!params.containsKey("address_purpose")) {
-            response.put("message", "Field address_purpose is required.");
-            return response;
+            payload.put("error", "Field address_purpose is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String addressPurposeString = params.get("address_purpose").toUpperCase();
         if (addressPurposeString.isBlank()) {
-            response.put("message", "Field address_purpose can't be blank.");
-            return response;
+            payload.put("error", "Field address_purpose can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         AddressPurpose addressPurpose = null;
         for (AddressPurpose ap : AddressPurpose.values()) {
@@ -291,8 +285,8 @@ public class AddressController {
             }
         }
         if (addressPurpose == null) {
-            response.put("message", "Field address_purpose must be a valid address purpose(CHARGE, DELIVER).");
-            return response;
+            payload.put("error", "Field address_purpose must be a valid address purpose(CHARGE, DELIVER).");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         Address address = null;
         switch (addressPurpose) {
@@ -306,8 +300,8 @@ public class AddressController {
                 break;
         }
         if (address == null) {
-            response.put("message", "The specified client address was not created yet, create it first.");
-            return response;
+            payload.put("error", "The specified client address was not created yet, create it first.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate firstName
@@ -316,12 +310,12 @@ public class AddressController {
             firstName = params.get("first_name").toLowerCase();
             firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1);
             if (firstName.isBlank()) {
-                response.put("message", "Field first_name can't be blank.");
-                return response;
+                payload.put("error", "Field first_name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!firstName.matches("\\p{L}+")) {
-                response.put("message", "Field first_name can contain only letters.");
-                return response;
+                payload.put("error", "Field first_name can contain only letters.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -331,12 +325,12 @@ public class AddressController {
             lastName = params.get("last_name").toLowerCase();
             lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1);
             if (lastName.isBlank()) {
-                response.put("message", "Field last_name can't be blank.");
-                return response;
+                payload.put("error", "Field last_name can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!lastName.matches("\\p{L}+")) {
-                response.put("message", "Field last_name can contain only letters.");
-                return response;
+                payload.put("error", "Field last_name can contain only letters.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -345,8 +339,8 @@ public class AddressController {
         if (params.containsKey("street")) {
             street = params.get("street");
             if (street.isBlank()) {
-                response.put("message", "Field street can't be blank.");
-                return response;
+                payload.put("error", "Field street can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -355,18 +349,18 @@ public class AddressController {
         if (params.containsKey("number")) {
             String numberString = params.get("number");
             if (numberString.isBlank()) {
-                response.put("message", "Field number can't be blank.");
-                return response;
+                payload.put("error", "Field number can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 number = Integer.parseInt(numberString);
             } catch (NumberFormatException e) {
-                response.put("message", "Field number must be a valid integer number.");
-                return response;
+                payload.put("error", "Field number must be a valid integer number.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (number < 0) {
-                response.put("message", "Field number can't be negative.");
-                return response;
+                payload.put("error", "Field number can't be negative.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -375,12 +369,12 @@ public class AddressController {
         if (params.containsKey("apartment")) {
             apartment = params.get("apartment").replaceAll("\\p{Z}", "").toUpperCase();
             if (apartment.isBlank()) {
-                response.put("message", "Field apartment can't be blank.");
-                return response;
+                payload.put("error", "Field apartment can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!apartment.matches("\\p{N}+\\p{L}{0,2}")) {
-                response.put("message", "Field apartment must follow the format 'N' or 'N LL' where N is a number and L is a letter.");
-                return response;
+                payload.put("error", "Field apartment must follow the format 'N' or 'N LL' where N is a number and L is a letter.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -389,12 +383,12 @@ public class AddressController {
         if (params.containsKey("postal_code")) {
             postalCode = params.get("postal_code").replaceAll("\\p{Z}", "");
             if (postalCode.isBlank()) {
-                response.put("message", "Field postal_code can't be blank.");
-                return response;
+                payload.put("error", "Field postal_code can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!postalCode.matches("\\p{N}{4}[-]\\p{N}{3}")) {
-                response.put("message", "Field postal_code must follow the format 'DDDD-DDD' where D is a digit.");
-                return response;
+                payload.put("error", "Field postal_code must follow the format 'DDDD-DDD' where D is a digit.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -403,8 +397,8 @@ public class AddressController {
         if (params.containsKey("locality")) {
             locality = params.get("locality");
             if (locality.isBlank()) {
-                response.put("message", "Field locality can't be blank.");
-                return response;
+                payload.put("error", "Field locality can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -413,8 +407,8 @@ public class AddressController {
         if (params.containsKey("country")) {
             country = params.get("country");
             if (country.isBlank()) {
-                response.put("message", "Field country can't be blank.");
-                return response;
+                payload.put("error", "Field country can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -423,16 +417,16 @@ public class AddressController {
         if (params.containsKey("tax_number")) {
             taxNumber = params.get("tax_number").replaceAll("\\p{Z}", "");
             if (taxNumber.isBlank()) {
-                response.put("message", "Field tax_number can't be blank.");
-                return response;
+                payload.put("error", "Field tax_number can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!taxNumber.matches("\\p{N}*")) {
-                response.put("message", "Field tax_number must contain only digits.");
-                return response;
+                payload.put("error", "Field tax_number must contain only digits.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (taxNumber.length() != 9) {
-                response.put("message", "Field tax_number must contain nine digits.");
-                return response;
+                payload.put("error", "Field tax_number must contain nine digits.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -441,16 +435,16 @@ public class AddressController {
         if (params.containsKey("phone_number")) {
             phoneNumber = params.get("phone_number").replaceAll("\\p{Z}", "");
             if (phoneNumber.isBlank()) {
-                response.put("message", "Field phone_number can't be blank.");
-                return response;
+                payload.put("error", "Field phone_number can't be blank.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (!phoneNumber.matches("\\p{N}*")) {
-                response.put("message", "Field phone_number must contain only digits.");
-                return response;
+                payload.put("error", "Field phone_number must contain only digits.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (phoneNumber.length() != 9) {
-                response.put("message", "Field phone_number must contain nine digits.");
-                return response;
+                payload.put("error", "Field phone_number must contain nine digits.");
+                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
 
@@ -469,34 +463,30 @@ public class AddressController {
         if (phoneNumber != null) address.setPhoneNumber(phoneNumber);
         addressService.updateAddress(address);
 
-        //return response
-        response.put("error", false);
-        return response;
+        // return response
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
     // delete(set to null) client address of type of the current(loged in) client
-    @DeleteMapping("/client/address")
-    public HashMap<String, Object> deleteAddress(@RequestParam HashMap<String, String> params, Authentication authentication) {
-        HashMap<String, Object> response = new HashMap<>();
-        // if any validation fails response is going to have error = true
-        response.put("error", true);
+    @DeleteMapping(value = "/client/address", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> deleteAddress(@RequestParam HashMap<String, String> params, Authentication authentication) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
         Client client = clientService.readClientByEmail(authentication.getName());
         if (client == null) {
-            response.put("message", "This endpoint must be accessed while authenticated.");
-            return response;
+            return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
 
         // validate address purpose
         if (!params.containsKey("address_purpose")) {
-            response.put("message", "Field address_purpose is required.");
-            return response;
+            payload.put("error", "Field address_purpose is required.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String addressPurposeString = params.get("address_purpose").toUpperCase();
         if (addressPurposeString.isBlank()) {
-            response.put("message", "Field address_purpose can't be blank.");
-            return response;
+            payload.put("error", "Field address_purpose can't be blank.");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         AddressPurpose addressPurpose = null;
         for (AddressPurpose ap : AddressPurpose.values()) {
@@ -505,8 +495,8 @@ public class AddressController {
             }
         }
         if (addressPurpose == null) {
-            response.put("message", "Field address_purpose must be a valid address purpose(CHARGE, DELIVER).");
-            return response;
+            payload.put("error", "Field address_purpose must be a valid address purpose(CHARGE, DELIVER).");
+            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // all validation tests passed
@@ -514,9 +504,8 @@ public class AddressController {
         // delete address
         addressService.deleteAddress(client, addressPurpose);
 
-        //return response
-        response.put("error", false);
-        return response;
+        // return response
+        return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
 }

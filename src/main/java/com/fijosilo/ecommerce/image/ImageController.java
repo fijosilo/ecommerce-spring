@@ -45,8 +45,9 @@ public class ImageController {
         }
     }
 
-    @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> createImage(@RequestParam("image") MultipartFile file) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<HashMap<String, Object>> createImage(@RequestParam("image") MultipartFile file) {
+        HashMap<String, Object> payload = new HashMap<>();
 
         // give the image a unique name
         String name = UUID.randomUUID().toString();
@@ -67,11 +68,13 @@ public class ImageController {
             // resize the image if needed
             resizeImageIfExceeds(f, extension, 1920, 1080);
 
-            return new ResponseEntity<>(relPath, HttpStatus.CREATED);
+            payload.put("relPath", relPath);
+            return new ResponseEntity<>(payload, HttpStatus.CREATED);
         } catch (NullPointerException | IllegalStateException | IOException e) {
             log.warn(e.getMessage());
 
-            return new ResponseEntity<>("Server couldn't save the image.", HttpStatus.INTERNAL_SERVER_ERROR);
+            payload.put("error", "Server couldn't save the image.");
+            return new ResponseEntity<>(payload, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
