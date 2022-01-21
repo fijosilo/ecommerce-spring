@@ -6,6 +6,8 @@ import com.fijosilo.ecommerce.authentication.ClientService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
@@ -13,209 +15,317 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuthenticationControllerTest {
-    private static PasswordEncoder passwordEncoder;
-    private static ClientService clientService;
-
     private static AuthenticationController authenticationController;
-
-    private HashMap<String, String> params;
-    private HashMap<String, Object> response;
 
     @BeforeAll
     static void init() {
-        passwordEncoder = Mockito.mock(PasswordEncoder.class);
+        PasswordEncoder passwordEncoder = Mockito.mock(PasswordEncoder.class);
         Mockito.when(passwordEncoder.encode(Mockito.any(String.class))).thenReturn("*****");
-        clientService = Mockito.mock(ClientService.class);
+        ClientService clientService = Mockito.mock(ClientService.class);
         Mockito.when(clientService.createClient(Mockito.any(Client.class))).thenReturn(true);
         authenticationController = new AuthenticationController(passwordEncoder, clientService);
     }
 
     @Test
-    void firstNameIsRequired() {
-        params = new HashMap<>();
+    void registerMethod_firstNameIsRequiredTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field first name is required.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field first name is required.", response.getBody().get("error"));
     }
 
     @Test
-    void firstNameIsNotBlank() {
-        params = new HashMap<>();
+    void registerMethod_firstNameIsNotBlankTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field first name can't be blank.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field first name can't be blank.", response.getBody().get("error"));
     }
 
     @Test
-    void firstNameContainsOnlyLetters() {
-        params = new HashMap<>();
-        params.put("firstName", "Lor3m");
+    void registerMethod_firstNameContainsOnlyLettersTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field first name can contain only letters.", response.get("message"), "message does not match");
-        params.put("firstName", "Lorem!");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field first name can contain only letters.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response;
+
+        // tests
+        String[] invalidNames = new String[]{"Lor3m", "!orem"};
+        for (String s : invalidNames) {
+            params.put("firstName", s);
+
+            response = authenticationController.register(params);
+
+            assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+            assertTrue(response.getBody().containsKey("error"));
+            assertEquals("Field first name can contain only letters.", response.getBody().get("error"));
+        }
     }
 
     @Test
-    void lastNameIsRequired() {
-        params = new HashMap<>();
+    void registerMethod_lastNameIsRequiredTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("email", "loremipsim@email.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field last name is required.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field last name is required.", response.getBody().get("error"));
     }
 
     @Test
-    void lastNameIsNotBlank() {
-        params = new HashMap<>();
+    void registerMethod_lastNameIsNotBlankTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "");
         params.put("email", "loremipsim@email.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field last name can't be blank.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field last name can't be blank.", response.getBody().get("error"));
     }
 
     @Test
-    void lastNameContainsOnlyLetters() {
-        params = new HashMap<>();
+    void registerMethod_lastNameContainsOnlyLettersTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
-        params.put("lastName", "Ip5um");
         params.put("email", "loremipsim@email.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field last name can contain only letters.", response.get("message"), "message does not match");
-        params.put("lastName", "Ipsum!");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field last name can contain only letters.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response;
+
+        // tests
+        String[] invalidNames = new String[]{"Lor3m", "!orem"};
+        for (String s : invalidNames) {
+            params.put("lastName", s);
+
+            response = authenticationController.register(params);
+
+            assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+            assertTrue(response.getBody().containsKey("error"));
+            assertEquals("Field last name can contain only letters.", response.getBody().get("error"));
+        }
     }
 
     @Test
-    void emailIsRequired() {
-        params = new HashMap<>();
+    void registerMethod_emailIsRequiredTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field email is required.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field email is required.", response.getBody().get("error"));
     }
 
     @Test
-    void emailIsNotBlank() {
-        params = new HashMap<>();
+    void registerMethod_emailIsNotBlankTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field email can't be blank.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field email can't be blank.", response.getBody().get("error"));
     }
 
     @Test
-    void emailIsProperlyFormatted() {
-        params = new HashMap<>();
+    void registerMethod_emailIsProperlyFormattedTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim.com");
         params.put("password", "l0rem!psum");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field email needs to be a valid email address.", response.get("message"), "message does not match");
-        params.put("email", "loremipsim@com");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field email needs to be a valid email address.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response;
+
+        // tests
+        String[] invalidEmails = new String[]{"loremipsim.com", "loremipsim@gmail"};
+        for (String s : invalidEmails) {
+            params.put("email", s);
+
+            response = authenticationController.register(params);
+
+            assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+            assertTrue(response.getBody().containsKey("error"));
+            assertEquals("Field email needs to be a valid email address.", response.getBody().get("error"));
+        }
     }
 
     @Test
-    void passwordIsRequired() {
-        params = new HashMap<>();
+    void registerMethod_passwordIsRequiredTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field password is required.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field password is required.", response.getBody().get("error"));
     }
 
     @Test
-    void passwordIsNotBlank() {
-        params = new HashMap<>();
+    void registerMethod_passwordIsNotBlankTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field password can't be blank.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field password can't be blank.", response.getBody().get("error"));
     }
 
     @Test
-    void passwordIsBigEnough() {
-        params = new HashMap<>();
+    void registerMethod_passwordIsBigEnoughTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "A123!");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field password must have at least 8 characters.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field password must have at least 8 characters.", response.getBody().get("error"));
     }
 
     @Test
-    void passwordMustContainLetters() {
-        params = new HashMap<>();
+    void registerMethod_passwordMustContainLetterTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "1234567!");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field password must contain at least 1 letter.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field password must contain at least 1 letter.", response.getBody().get("error"));
     }
 
     @Test
-    void passwordMustContainDigits() {
-        params = new HashMap<>();
+    void registerMethod_passwordMustContainDigitTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "ABCDEFG!");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field password must contain at least 1 digit.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field password must contain at least 1 digit.", response.getBody().get("error"));
     }
 
     @Test
-    void passwordMustContainSpecialCharacters() {
-        params = new HashMap<>();
+    void registerMethod_passwordMustContainSpecialCharacterTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
         params.put("firstName", "Lorem");
         params.put("lastName", "Ipsum");
         params.put("email", "loremipsim@email.com");
         params.put("password", "A1234567");
-        response = authenticationController.register(params);
-        assertEquals(true, response.get("error"), "error does not match");
-        assertEquals("Field password must contain at least 1 special character.", response.get("message"), "message does not match");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, response.getStatusCode());
+        assertTrue(response.getBody().containsKey("error"));
+        assertEquals("Field password must contain at least 1 special character.", response.getBody().get("error"));
+    }
+
+    @Test
+    void registerMethod_allParametersAreValidTest() {
+        // request
+        HashMap<String, String> params = new HashMap<>();
+        params.put("firstName", "Lorem");
+        params.put("lastName", "Ipsum");
+        params.put("email", "loremipsim@email.com");
+        params.put("password", "A123456!");
+
+        // response
+        ResponseEntity<HashMap<String, Object>> response = authenticationController.register(params);
+
+        // tests
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertFalse(response.getBody().containsKey("error"));
     }
 
 }

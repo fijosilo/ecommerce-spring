@@ -23,30 +23,29 @@ public class ClientController {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
-        Client client = clientService.readClientByEmail(authentication.getName());
-        if (client == null) {
+        if (authentication == null) {
             return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
+        Client client = clientService.readClientByEmail(authentication.getName());
 
         payload.put("client", client);
         return new ResponseEntity<>(payload, HttpStatus.OK);
     }
 
     @PutMapping
-    public ResponseEntity<HashMap<String, Object>> updateClient(@RequestParam HashMap<String, String> params, Authentication authentication) {
+    public ResponseEntity<HashMap<String, Object>> updateClient(Authentication authentication, @RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
-        Client client = clientService.readClientByEmail(authentication.getName());
-        if (client == null) {
+        if (authentication == null) {
             return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
+        Client client = clientService.readClientByEmail(authentication.getName());
 
         // optional validate firstName
         String firstName = null;
         if (params.containsKey("first_name")) {
             firstName = params.get("first_name").toLowerCase();
-            firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1);
             if (firstName.isBlank()) {
                 payload.put("error", "Field first_name can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -55,13 +54,13 @@ public class ClientController {
                 payload.put("error", "Field first_name can contain only letters.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1);
         }
 
         // optional validate lastName
         String lastName = null;
         if (params.containsKey("last_name")) {
             lastName = params.get("last_name").toLowerCase();
-            lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1);
             if (lastName.isBlank()) {
                 payload.put("error", "Field last_name can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
@@ -70,6 +69,7 @@ public class ClientController {
                 payload.put("error", "Field last_name can contain only letters.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1);
         }
 
         // all validation tests passed
