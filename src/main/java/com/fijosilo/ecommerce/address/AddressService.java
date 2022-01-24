@@ -1,6 +1,5 @@
 package com.fijosilo.ecommerce.address;
 
-import com.fijosilo.ecommerce.authentication.Client;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +19,8 @@ public class AddressService {
         return addressDAO.updateAddress(address);
     }
 
-    public boolean deleteAddress(Client client, AddressPurpose addressPurpose) {
-        return addressDAO.deleteAddress(client, addressPurpose);
+    public boolean deleteAddress(Address address) {
+        return addressDAO.deleteAddress(address);
     }
 
 }

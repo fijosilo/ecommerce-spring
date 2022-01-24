@@ -12,12 +12,13 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientControllerTest {
+    private static Client client;
     private static ClientController clientController;
     private static Authentication authentication;
 
     @BeforeAll
     static void init() {
-        Client client = new Client();
+        client = new Client();
         client.setId(1L);
         client.setFirstName("Lorem");
         client.setLastName("Ipsum");
@@ -53,17 +54,11 @@ class ClientControllerTest {
 
         // tests
         assertEquals(HttpStatus.OK, response.getStatusCode());
+
         assertTrue(response.getBody().containsKey("client"));
         assertNotNull(response.getBody().get("client"));
         assertTrue(response.getBody().get("client") instanceof Client);
-
-        Client client = (Client) response.getBody().get("client");
-        assertEquals(1L, client.getId());
-        assertEquals("Lorem", client.getFirstName());
-        assertEquals("Ipsum", client.getLastName());
-        assertEquals("loremipsum@email.com", client.getEmail());
-        assertEquals("CLIENT", client.getRole());
-        assertTrue(client.isEnabled());
+        assertEquals(client, response.getBody().get("client"));
     }
 
     @Test

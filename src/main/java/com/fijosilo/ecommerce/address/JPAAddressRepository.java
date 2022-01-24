@@ -56,20 +56,7 @@ public class JPAAddressRepository implements AddressDAO {
     }
 
     @Override
-    public boolean deleteAddress(Client client, AddressPurpose addressPurpose) {
-        Address address = null;
-        switch (addressPurpose) {
-            case CHARGE:
-                address = client.getChargeAddress();
-                client.setChargeAddress(null);
-                break;
-            case DELIVER:
-                address = client.getDeliverAddress();
-                client.setDeliverAddress(null);
-                break;
-            default:
-                break;
-        }
+    public boolean deleteAddress(Address address) {
         if (address == null) return false;
         try {
             entityManager.remove(address);
