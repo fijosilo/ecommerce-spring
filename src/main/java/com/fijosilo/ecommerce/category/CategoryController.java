@@ -32,6 +32,7 @@ public class CategoryController {
             payload.put("error", "Field category_name can't be blank.");
             return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        // validate category
         Category category = categoryService.readCategoryByName(categoryName);
         if (category == null) {
             payload.put("error", "Field category_name must be a valid category name.");
@@ -56,7 +57,7 @@ public class CategoryController {
     }
 
     @PostMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HashMap<String, Object>> addCategory(@RequestParam HashMap<String, String> params) {
+    public ResponseEntity<HashMap<String, Object>> createCategory(@RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate name
@@ -153,7 +154,8 @@ public class CategoryController {
                 payload.put("error", "Field category_parent_name can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (categoryParentName.equals("null")) {
+            categoryParentName = categoryParentName.toUpperCase();
+            if (categoryParentName.equals("NULL")) {
                 isParentNull = true;
             } else {
                 parent = categoryService.readCategoryByName(categoryParentName);
