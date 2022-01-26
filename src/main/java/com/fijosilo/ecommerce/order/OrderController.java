@@ -26,14 +26,14 @@ public class OrderController {
     }
 
     @GetMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HashMap<String, Object>> readOrder(@RequestParam HashMap<String, String> params, Authentication authentication) {
+    public ResponseEntity<HashMap<String, Object>> readOrder(Authentication authentication, @RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
-        Client client = clientService.readClientByEmail(authentication.getName());
-        if (client == null) {
+        if (authentication == null) {
             return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
+        Client client = clientService.readClientByEmail(authentication.getName());
 
         // validate order code
         if (!params.containsKey("code")) {
@@ -94,32 +94,31 @@ public class OrderController {
     }
 
     @GetMapping(value = "/orders", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HashMap<String, Object>> readOrders(@RequestParam HashMap<String, String> params, Authentication authentication) {
+    public ResponseEntity<HashMap<String, Object>> readOrders(Authentication authentication, @RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
-        Client client = clientService.readClientByEmail(authentication.getName());
-        if (client == null) {
-            payload.put("error", "This endpoint must be accessed while authenticated.");
-            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
+        if (authentication == null) {
+            return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
+        Client client = clientService.readClientByEmail(authentication.getName());
 
         // optional validate maximum orders per page
         Integer maxOrdersPerPage = 10;
-        if (params.containsKey("max_products_per_page")) {
-            String maxProductsPerPageString = params.get("max_products_per_page");
+        if (params.containsKey("max_orders_per_page")) {
+            String maxProductsPerPageString = params.get("max_orders_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                payload.put("error", "Field maximum products per page can't be blank.");
+                payload.put("error", "Field max_orders_per_page can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxOrdersPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                payload.put("error", "Field max_orders_per_page must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxOrdersPerPage < 1) {
-                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                payload.put("error", "Field max_orders_per_page can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -129,17 +128,17 @@ public class OrderController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                payload.put("error", "Field page number can't be blank.");
+                payload.put("error", "Field page_number can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field page number must be a valid integer number.");
+                payload.put("error", "Field page_number must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                payload.put("error", "Field page number can't be smaller than one.");
+                payload.put("error", "Field page_number can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -183,7 +182,7 @@ public class OrderController {
             try {
                 minDate = Long.parseLong(minDateString);
             } catch (IllegalArgumentException e) {
-                payload.put("error", "Field min_order_date must follow the format yyyy-[m]m-[d]d hh:mm:ss[.f...].");
+                payload.put("error", "Field min_order_date must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -199,7 +198,7 @@ public class OrderController {
             try {
                 maxDate = Long.parseLong(maxDateString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field max_order_date must follow the format yyyy-[m]m-[d]d hh:mm:ss[.f...].");
+                payload.put("error", "Field max_order_date must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -246,10 +245,6 @@ public class OrderController {
                 payload.put("error", "Field order_is_paid can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (!isPaidString.equals("true") && !isPaidString.equals("false")) {
-                payload.put("error", "Field order_is_paid must be true or false.");
-                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             isPaid = Boolean.parseBoolean(isPaidString);
         }
 
@@ -271,29 +266,25 @@ public class OrderController {
                 payload.put("error", "Field order_is_fulfilled can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (!isFulfilledString.equals("true") && !isFulfilledString.equals("false")) {
-                payload.put("error", "Field order_is_fulfilled must be true or false.");
-                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             isFulfilled = Boolean.parseBoolean(isFulfilledString);
         }
 
         // optional validate maximum orders per page
         Integer maxOrdersPerPage = 10;
-        if (params.containsKey("max_products_per_page")) {
-            String maxProductsPerPageString = params.get("max_products_per_page");
+        if (params.containsKey("max_orders_per_page")) {
+            String maxProductsPerPageString = params.get("max_orders_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                payload.put("error", "Field maximum products per page can't be blank.");
+                payload.put("error", "Field max_orders_per_page can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxOrdersPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                payload.put("error", "Field max_orders_per_page must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxOrdersPerPage < 1) {
-                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                payload.put("error", "Field max_orders_per_page can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -303,17 +294,17 @@ public class OrderController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                payload.put("error", "Field page number can't be blank.");
+                payload.put("error", "Field page_number can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field page number must be a valid integer number.");
+                payload.put("error", "Field page_number must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                payload.put("error", "Field page number can't be smaller than one.");
+                payload.put("error", "Field page_number can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -329,15 +320,14 @@ public class OrderController {
     }
 
     @PostMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HashMap<String, Object>> createOrder(@RequestParam HashMap<String, String> params, Authentication authentication) {
+    public ResponseEntity<HashMap<String, Object>> createOrder(Authentication authentication, @RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
-        Client client = clientService.readClientByEmail(authentication.getName());
-        if (client == null) {
-            payload.put("error", "This endpoint must be accessed while authenticated.");
-            return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
+        if (authentication == null) {
+            return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
+        Client client = clientService.readClientByEmail(authentication.getName());
 
         // validate charge address
         if (client.getChargeAddress() == null) {
@@ -357,7 +347,7 @@ public class OrderController {
         String key = String.format("product_codes[%d]", i);
         while (params.containsKey(key)) {
             if (params.get(key).isBlank()) {
-                payload.put("error", String.format("Field product_codes can't be blank.", i));
+                payload.put("error", String.format("Field product_codes[%d] can't be blank.", i));
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             String productCode = params.get(key);
@@ -372,13 +362,13 @@ public class OrderController {
             key = String.format("product_codes[%d]", i);
         }
         if (products.size() == 0) {
-            payload.put("error", String.format("Field product_codes is required.", i));
+            payload.put("error", "Field product_codes is required.");
             return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         // validate payment method
         if (!params.containsKey("payment_method")) {
-            payload.put("error", String.format("Field payment_method is required.", i));
+            payload.put("error", "Field payment_method is required.");
             return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         String paymentMethod = params.get("payment_method").toUpperCase();
@@ -512,10 +502,6 @@ public class OrderController {
                 payload.put("error", "Field order_paid can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (!isPaidString.equals("true") && !isPaidString.equals("false")) {
-                payload.put("error", "Field order_paid must be true or false.");
-                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             isPaid = Boolean.parseBoolean(isPaidString);
         }
 
@@ -554,14 +540,14 @@ public class OrderController {
     }
 
     @DeleteMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HashMap<String, Object>> deleteOrder(@RequestParam HashMap<String, String> params, Authentication authentication) {
+    public ResponseEntity<HashMap<String, Object>> deleteOrder(Authentication authentication, @RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate client (should never fail unless security configurations are not properly configured)
-        Client client = clientService.readClientByEmail(authentication.getName());
-        if (client == null) {
+        if (authentication == null) {
             return new ResponseEntity<>(payload, HttpStatus.UNAUTHORIZED);
         }
+        Client client = clientService.readClientByEmail(authentication.getName());
 
         // validate code
         if (!params.containsKey("code")) {
@@ -579,11 +565,10 @@ public class OrderController {
             payload.put("error", "Field code must be a valid order code.");
             return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
-
         // validate that the requested order belongs to the client
         if (order.getClient() != client) {
             // if it doesn't, behave has if the order doesn't even exist
-            // because we don't want clients to be able to delete other clients orders
+            // because we don't want clients to be able to delete and know about other clients orders
             payload.put("error", "Field code must be a valid order code.");
             return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
