@@ -65,17 +65,17 @@ public class ProductController {
         if (params.containsKey("min_price")) {
             String minPriceString = params.get("min_price");
             if (minPriceString.isBlank()) {
-                payload.put("error", "Field minimum price can't be blank.");
+                payload.put("error", "Field min_price can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 minPrice = Double.parseDouble(minPriceString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field minimum price must be a valid rational number.");
+                payload.put("error", "Field min_price must be a valid rational number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (minPrice < 0.0) {
-                payload.put("error", "Field minimum price can't be negative.");
+                payload.put("error", "Field min_price can't be negative.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -84,17 +84,17 @@ public class ProductController {
         if (params.containsKey("max_price")) {
             String maxPriceString = params.get("max_price");
             if (maxPriceString.isBlank()) {
-                payload.put("error", "Field maximum price can't be blank.");
+                payload.put("error", "Field max_price can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxPrice = Double.parseDouble(maxPriceString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field maximum price must be a valid rational number.");
+                payload.put("error", "Field max_price must be a valid rational number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxPrice < 0.0) {
-                payload.put("error", "Field maximum price can't be negative.");
+                payload.put("error", "Field max_price can't be negative.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -107,7 +107,7 @@ public class ProductController {
         }
         if (minPrice != null && maxPrice != null) {
             if (minPrice > maxPrice) {
-                payload.put("error", "Field minimum price can't be bigger than maximum price.");
+                payload.put("error", "Field min_price can't be bigger than max_price.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -141,17 +141,17 @@ public class ProductController {
         if (params.containsKey("max_products_per_page")) {
             String maxProductsPerPageString = params.get("max_products_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                payload.put("error", "Field maximum products per page can't be blank.");
+                payload.put("error", "Field max_products_per_page can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                payload.put("error", "Field max_products_per_page must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxProductsPerPage < 1) {
-                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                payload.put("error", "Field max_products_per_page can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -160,17 +160,17 @@ public class ProductController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                payload.put("error", "Field page number can't be blank.");
+                payload.put("error", "Field page_number can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field page number must be a valid integer number.");
+                payload.put("error", "Field page_number must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                payload.put("error", "Field page number can't be smaller than one.");
+                payload.put("error", "Field page_number can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -185,7 +185,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/admin/product", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HashMap<String, Object>> addProduct(@RequestParam HashMap<String, String> params) {
+    public ResponseEntity<HashMap<String, Object>> createProduct(@RequestParam HashMap<String, String> params) {
         HashMap<String, Object> payload = new HashMap<>();
 
         // validate brand
@@ -253,7 +253,7 @@ public class ProductController {
         try {
             stock = Integer.parseInt(params.get("stock"));
         } catch (NumberFormatException e) {
-            payload.put("error", "Field stock is not a valid integer number.");
+            payload.put("error", "Field stock must be a valid rational number.");
             return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (stock < 0) {
@@ -279,10 +279,10 @@ public class ProductController {
             try {
                 discountInteger = Integer.parseInt(params.get("discount"));
             } catch (NumberFormatException e) {
-                payload.put("error", "Field discount is not a valid integer number.");
+                payload.put("error", "Field discount must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (discount < 0 || discount > 100) {
+            if (discountInteger < 0 || discountInteger > 100) {
                 payload.put("error", "Field discount must be between 0 and 100.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -434,15 +434,10 @@ public class ProductController {
         // optional validate price
         Double price = null;
         if (params.containsKey("price")) {
-            String priceString = params.get("price");
-            if (priceString.isBlank()) {
-                payload.put("error", "Field price can't be blank.");
-                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             try {
-                price = Double.parseDouble(priceString);
+                price = Double.parseDouble(params.get("price"));
             } catch (NumberFormatException e) {
-                payload.put("error", "Field price is not a valid rational number.");
+                payload.put("error", "Field price must be a valid rational number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (price < 0.0) {
@@ -453,15 +448,10 @@ public class ProductController {
         // optional validate stock
         Integer stock = null;
         if (params.containsKey("stock")) {
-            String stockString = params.get("stock");
-            if (stockString.isBlank()) {
-                payload.put("error", "Field stock can't be blank.");
-                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             try {
-                stock = Integer.parseInt(stockString);
+                stock = Integer.parseInt(params.get("stock"));
             } catch (NumberFormatException e) {
-                payload.put("error", "Field stock is not a valid integer number.");
+                payload.put("error", "Field stock must be a valid rational number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (stock < 0) {
@@ -481,16 +471,11 @@ public class ProductController {
         // optional validate discount
         Double discount = null;
         if (params.containsKey("discount")) {
-            String stockString = params.get("discount");
-            if (stockString.isBlank()) {
-                payload.put("error", "Field discount can't be blank.");
-                return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             int discountInteger;
             try {
-                discountInteger = Integer.parseInt(stockString);
+                discountInteger = Integer.parseInt(params.get("discount"));
             } catch (NumberFormatException e) {
-                payload.put("error", "Field discount is not a valid integer number.");
+                payload.put("error", "Field discount must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (discountInteger < 0 || discountInteger > 100) {
@@ -613,17 +598,17 @@ public class ProductController {
         if (params.containsKey("max_products_per_page")) {
             String maxProductsPerPageString = params.get("max_products_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                payload.put("error", "Field maximum products per page can't be blank.");
+                payload.put("error", "Field max_products_per_page can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                payload.put("error", "Field max_products_per_page must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxProductsPerPage < 1) {
-                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                payload.put("error", "Field max_products_per_page can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -633,17 +618,17 @@ public class ProductController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                payload.put("error", "Field page number can't be blank.");
+                payload.put("error", "Field page_number can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field page number must be a valid integer number.");
+                payload.put("error", "Field page_number must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                payload.put("error", "Field page number can't be smaller than one.");
+                payload.put("error", "Field page_number can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -666,17 +651,17 @@ public class ProductController {
         if (params.containsKey("max_products_per_page")) {
             String maxProductsPerPageString = params.get("max_products_per_page");
             if (maxProductsPerPageString.isBlank()) {
-                payload.put("error", "Field maximum products per page can't be blank.");
+                payload.put("error", "Field max_products_per_page can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 maxProductsPerPage = Integer.parseInt(maxProductsPerPageString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field maximum products per page must be a valid integer number.");
+                payload.put("error", "Field max_products_per_page must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (maxProductsPerPage < 1) {
-                payload.put("error", "Field maximum products per page can't be smaller than one.");
+                payload.put("error", "Field max_products_per_page can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
@@ -686,17 +671,17 @@ public class ProductController {
         if (params.containsKey("page_number")) {
             String pageNumberString = params.get("page_number");
             if (pageNumberString.isBlank()) {
-                payload.put("error", "Field page number can't be blank.");
+                payload.put("error", "Field page_number can't be blank.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             try {
                 pageNumber = Integer.parseInt(pageNumberString);
             } catch (NumberFormatException e) {
-                payload.put("error", "Field page number must be a valid integer number.");
+                payload.put("error", "Field page_number must be a valid integer number.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (pageNumber < 1) {
-                payload.put("error", "Field page number can't be smaller than one.");
+                payload.put("error", "Field page_number can't be smaller than one.");
                 return new ResponseEntity<>(payload, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         }
