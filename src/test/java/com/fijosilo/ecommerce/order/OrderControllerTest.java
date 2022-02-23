@@ -6,6 +6,7 @@ import com.fijosilo.ecommerce.authentication.ClientService;
 import com.fijosilo.ecommerce.product.Product;
 import com.fijosilo.ecommerce.product.ProductService;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("UnitTest")
 class OrderControllerTest {
     private static OrderController orderController;
     private static Authentication authentication, authenticationInvalidChargeAddress, authenticationInvalidDeliverAddress;

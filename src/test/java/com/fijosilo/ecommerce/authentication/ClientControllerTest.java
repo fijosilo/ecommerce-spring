@@ -1,6 +1,7 @@
 package com.fijosilo.ecommerce.authentication;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("UnitTest")
 class ClientControllerTest {
     private static Client client;
     private static ClientController clientController;

@@ -6,6 +6,7 @@ import com.fijosilo.ecommerce.authentication.ClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +32,11 @@ class InitApplication {
 
 	private static final Logger log = LoggerFactory.getLogger(JPAClientRepository.class);
 
+	@Value("${com.fijosilo.ecommerce.admin_email}")
+	private String adminEmail;
+	@Value("${com.fijosilo.ecommerce.admin_password}")
+	private String adminPassword;
+
 	@Autowired
 	public InitApplication(ClientService clientService, PasswordEncoder passwordEncoder) {
 		this.clientService = clientService;
@@ -42,18 +48,18 @@ class InitApplication {
 		// create an admin client the first time the app runs
 		Client admin = clientService.readClientByEmail("admin@email.com");
 		if (admin == null) {
-			String password = UUID.randomUUID().toString();
+			//String password = UUID.randomUUID().toString();
 
 			admin = new Client();
 			admin.setFirstName("Master");
 			admin.setLastName("Admin");
-			admin.setEmail("admin@email.com");
-			admin.setPassword(passwordEncoder.encode(password));
+			admin.setEmail(adminEmail);
+			admin.setPassword(passwordEncoder.encode(adminPassword));
 			admin.setRole("ADMIN");
 			admin.setEnabled(true);
 
 			if (clientService.createClient(admin)) {
-				log.info("Master Admin\nemail: admin@email.com\npassword: " + password);
+				log.info(String.format("Master Admin\nemail: %s\npassword: %s", adminEmail, adminPassword));
 			}
 		}
 

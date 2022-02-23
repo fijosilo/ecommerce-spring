@@ -3,6 +3,7 @@ package com.fijosilo.ecommerce.address;
 import com.fijosilo.ecommerce.authentication.Client;
 import com.fijosilo.ecommerce.authentication.ClientService;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("UnitTest")
 class AddressControllerTest {
     private static Client client;
     private static AddressController addressController;

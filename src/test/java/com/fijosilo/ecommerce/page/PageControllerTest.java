@@ -1,6 +1,7 @@
 package com.fijosilo.ecommerce.page;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("UnitTest")
 class PageControllerTest {
     private static PageController pageController;
     private static Page page;
@@ -19,9 +21,10 @@ class PageControllerTest {
         page = new Page();
         page.setId(1L);
         page.setTitle("Exmaple page title");
-        page.setContent("[h1]Exmaple page title[/h1]\n" +
-                "\n" +
-                "[p]Some text[/p]");
+        page.setContent("""
+                [h1]Exmaple page title[/h1]
+
+                [p]Some text[/p]""");
 
         PageService pageService = Mockito.mock(PageService.class);
         Mockito.when(pageService.readPageByTitle(Mockito.anyString())).thenReturn(null);
@@ -150,9 +153,10 @@ class PageControllerTest {
         // request
         HashMap<String, String> params = new HashMap<>();
         params.put("title", "New Title");
-        params.put("content", "[h1]New Title[/h1]\n" +
-                "\n" +
-                "[p]Some text[/p]");
+        params.put("content", """
+                [h1]New Title[/h1]
+
+                [p]Some text[/p]""");
 
         // response
         ResponseEntity<HashMap<String, Object>> response = pageController.createPage(params);
@@ -228,9 +232,10 @@ class PageControllerTest {
         // request
         HashMap<String, String> params = new HashMap<>();
         params.put("title", page.getTitle());
-        params.put("content", "[h1]New Title[/h1]\n" +
-                "\n" +
-                "[p]Some text[/p]");
+        params.put("content", """
+                [h1]New Title[/h1]
+
+                [p]Some text[/p]""");
 
         // response
         ResponseEntity<HashMap<String, Object>> response = pageController.updatePage(params);
