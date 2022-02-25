@@ -73,7 +73,7 @@ public class CategoryRepository implements CategoryDAO {
 
     @Override
     public boolean deleteCategory(Category category) {
-        // we are not going to delete the actual product records, just set their account as disabled
+        // we are not going to delete the actual category, just set it as disabled
         category.setEnabled(false);
         // with JPA if the entity was loaded from the database
         // modifying it modifies it in the database, so we don't need to do anything
